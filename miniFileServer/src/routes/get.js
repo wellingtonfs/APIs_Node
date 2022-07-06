@@ -5,14 +5,11 @@ const fs = require('fs')
 const User = require('../models/Usuario')
 const Path = require('../util/path')
 
-
-rota.get('/', async (req, res) => {
-    res.render('download')
-})
-
 rota.get('/:dir/:filename', async (req, res) => {
     var dir = req.params.dir
     var filename = req.params.filename
+
+    return res.status(200).json({dir, filename})
 
     if (!filename)
         return res.status(400).json({ error: 'No filename provided' })
@@ -39,22 +36,6 @@ rota.get('/:dir/:filename', async (req, res) => {
     } else {
         return res.status(404).json({ error: 'File not found' })
     }
-})
-
-rota.get('/listdir', async (req, res) => {
-    let folders = []
-
-    try {
-        if (!fs.existsSync(Path.dirData)) return res.status(200).json({ folders })
-
-        folders = fs.readdirSync(Path.dirData, { withFileTypes: true })
-            .filter(file => file.isDirectory())
-            .map(file => file.name)
-    } catch (e) {
-        console.log(e)
-    }
-    
-    return res.status(200).json({ folders })
 })
 
 module.exports = rota

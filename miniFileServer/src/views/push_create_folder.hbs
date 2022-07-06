@@ -27,12 +27,12 @@
             return alert("Nome inválido:\n\n- Deve conter apenas letras e/ou números;\n- Espaços são permitidos;\n- Nomes vazios não são permitidos.")
         
         $.ajax({
-            url: "/push/createdir",
+            url: "/folder/create",
             type: "POST",
             data: JSON.stringify({ name: name }),
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            success: function (data) { window.location.href = "/" },
+            success: function (data) { window.location.href = "/push" },
             error: function (data) { 
                 alert("Servidor diz:\n\n" + (data.responseJSON ? data.responseJSON.error : data.error));
             }
@@ -140,10 +140,12 @@
         justify-content: center;
         margin: 5px;
 
-        background-color: rgb(190, 250, 133);
+        background-color: rgb(0, 78, 55);
+        color: #fff;
     }
 
     .div_row > button:hover {
-        background-color: rgb(159, 241, 83);
+        background-color: rgb(0, 255, 128);
+        color: black;
     }
 </style>

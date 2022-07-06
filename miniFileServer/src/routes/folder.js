@@ -1,36 +1,26 @@
 const express = require('express')
 const rota = express.Router()
-
-const multer = require('multer')
-const configMulter = require('../modules/multer')
-const Path = require('../util/path')
 const fs = require('fs')
 
-const upload = multer(configMulter).single('file')
+const Path = require('../util/path')
 
-rota.get('/', (req, res) => {
-    res.render('upload')
+rota.get('/list', async (req, res) => {
+    let folders = []
+
+    try {
+        if (!fs.existsSync(Path.dirData)) return res.status(200).json({ folders })
+
+        folders = fs.readdirSync(Path.dirData, { withFileTypes: true })
+            .filter(file => file.isDirectory())
+            .map(file => file.name)
+    } catch (e) {
+        console.log(e)
+    }
+    
+    return res.status(200).json({ folders })
 })
 
-rota.get('/criar_pasta', (req, res) => {
-    res.render('criarPasta')
-})
-
-rota.post('/file', (req, res) => {
-    upload(req, res, async (err) => {
-        if (err) return res.status(400).json({ error: err.message })
-
-
-        return res.status(200).json({
-            filename: req.body.name,
-            folder: req.body.pasta,
-            url: `/${req.body.pasta}/${req.body.name}`,
-            url_download: `/get/${req.body.pasta}/${req.body.name}`
-        })
-    })
-})
-
-rota.post('/createdir', async (req, res) => {
+rota.post('/create', async (req, res) => {
     try {
         var { name } = req.body
 
@@ -53,7 +43,6 @@ rota.post('/createdir', async (req, res) => {
         console.log(e)
         return res.status(400).json({ error: 'nome inválido' })
     }
-
 })
 
 module.exports = rota

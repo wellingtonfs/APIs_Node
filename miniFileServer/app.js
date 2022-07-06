@@ -3,9 +3,10 @@ const morgan = require('morgan')
 const exphbs  = require('express-handlebars');
 
 const rotaHome = require("./src/routes/home")
-const rotaUpload = require("./src/routes/upload")
-const rotaDownload = require("./src/routes/download")
-const rotaAuth = require("./src/routes/auth")
+const rotaUpload = require("./src/routes/push")
+const rotaDownload = require("./src/routes/get")
+const rotaFolder = require("./src/routes/folder")
+const rotaViewer = require("./src/routes/view")
 
 const app = express()
 
@@ -33,7 +34,8 @@ app.use(express.urlencoded({extended: true}))
 app.use('/', rotaHome)
 app.use('/push', rotaUpload)
 app.use('/get', rotaDownload)
-app.use('/auth', rotaAuth)
+app.use('/folder', rotaFolder)
+app.use('/view', rotaViewer)
 
 let server = app.listen(porta, () => console.log("Servidor Iniciado! IP: http://localhost:" + porta))
 
