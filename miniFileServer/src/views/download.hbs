@@ -1,0 +1,124 @@
+<div id="dialog-form">
+    <div id="containerForm">
+        <h3 id="titulo">Carregando...</h3>
+    </div>
+</div>
+
+<script defer>
+    function addButton(command) {
+        const mydiv = document.createElement("div")
+        mydiv.className = "div_row"
+
+        const mybutton = document.createElement("button")
+        mybutton.addEventListener("click", () => window.location.href = command.link)
+        mybutton.textContent = command.label
+
+        if (command.id) mybutton.id = command.id
+
+        mydiv.appendChild(mybutton)
+        return mydiv
+    }
+
+    window.onload = () => {
+        $.ajax({
+            url: "/get/listdir",
+            type: "GET",
+            success: function (data) {
+                const divPai = document.getElementById("containerForm")
+
+                if (data["folders"].length == 0) {
+                    $("#titulo").html("Nenhuma pasta encontrada")
+                    return;
+                }
+
+                $("#titulo").html("Em qual pasta seu arquivo está?")
+
+                data["folders"].forEach(name => {
+                    divPai.appendChild(addButton({ label: name, link: "/get/"+name }))
+                })
+
+                divPai.appendChild(addButton({ label: "Voltar", link: "/", id: "btnCommand" }))
+
+                //const selectPasta = document.getElementById("select_type")
+                //data["folders"].forEach(name => selectPasta.add(new Option(name, name)))
+            },
+            error: function (data) { 
+                alert((data.responseJSON ? data.responseJSON.error : data.error))
+                $("#titulo").html("Erro de comunicação com o servidor")
+            }
+        })
+    }
+</script>
+
+<style>
+    body {
+        overflow-x: hidden;
+    }
+
+    #dialog-form {
+        display: flex;
+        width: 100vw;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    #dialog-form > #containerForm {
+        display: flex;
+        flex-direction: column;
+        background-color: #f5f5f5;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 5px 10px 8px 10px #888888;
+
+        width: 30vw;
+
+        min-width: 280px;
+        max-width: 700px;
+        margin-top: 5vh;
+
+        align-items: center;
+    }
+
+    #dialog-form > #containerForm > h3 {
+        color: #333;
+    }
+
+    #dialog-form > #containerForm > .div_row {
+        display: flex;
+        width: 100%;
+        height: 7vh;
+        justify-content: center;
+        margin: 5px;
+
+        min-height: 30px;
+        max-height: 100px;
+    }
+
+    .div_row > button {
+        display: flex;
+
+        border-radius: 15px;
+        border-width: 0px;
+        width: 100%;
+
+        align-items: center;
+        justify-content: center;
+
+        background-color: rgb(211, 211, 211);
+        color: #333;
+        font-size: larger;
+    }
+
+    .div_row > button:hover {
+        background-color: rgb(0, 255, 128);
+    }
+
+    #btnCommand {
+        background-color: #00000000;
+        color: black;
+    }
+
+    #btnCommand:hover {
+        color: green;
+    }
+</style>

@@ -1,0 +1,17 @@
+{
+  "name": "roteamento",
+  "version": "1.0.0",
+  "description": "Direcionar conexões",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/server.js"
+  },
+  "author": "Wellington Silveira",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1"
+  }
+}
