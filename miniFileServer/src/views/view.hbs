@@ -1,6 +1,6 @@
 <div id="dialog-form">
     <div id="containerForm">
-        <h3 id="titulo">Carregando...</h3>
+        <h3 id="titulo">Em qual pasta seu arquivo está?</h3>
     </div>
 </div>
 
@@ -34,7 +34,7 @@
         $("#titulo").html("Em qual pasta seu arquivo está?")
 
         folders.forEach(name => {
-            divPai.appendChild(addButton({ label: name, link: "/get/"+name }))
+            divPai.appendChild(addButton({ label: name, link: "/view/"+name }))
         })
 
         divPai.appendChild(addButton({ label: "Voltar", link: "/", id: "btnCommand" }))
@@ -101,7 +101,7 @@
 
         background-color: rgb(211, 211, 211);
         color: #333;
-        font-size: larger;
+        font-size: medium;
     }
 
     .div_row > button:hover {

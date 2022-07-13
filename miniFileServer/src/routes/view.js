@@ -10,14 +10,16 @@ rota.get('/', async (req, res) => {
 })
 
 rota.get('/:dir', async (req, res) => {
-    res.render('view_folder')
+    const dir = req.params.dir
+
+    res.render('view_folder', { folder: dir, files: JSON.stringify(opFs.listfiles(dir)) })
 })
 
 rota.get('/:dir/:filename', async (req, res) => {
-    var dir = req.params.dir
-    var filename = req.params.filename
+    const dir = req.params.dir
+    const filename = req.params.filename
 
-    return res.status(200).json({dir, filename})
+    return res.status(200).json({ details: opFs.getFileDetails(dir, filename) })
 
     if (!filename)
         return res.status(400).json({ error: 'No filename provided' })

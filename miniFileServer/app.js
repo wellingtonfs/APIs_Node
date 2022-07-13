@@ -2,11 +2,18 @@ const express = require("express")
 const morgan = require('morgan')
 const exphbs  = require('express-handlebars');
 
-const rotaHome = require("./src/routes/home")
-const rotaUpload = require("./src/routes/push")
-const rotaDownload = require("./src/routes/get")
-const rotaFolder = require("./src/routes/folder")
-const rotaViewer = require("./src/routes/view")
+//API
+
+const apiFiles = require("./src/routes/api/files")
+const apiServices = require("./src/routes/api/services")
+
+//front
+
+// const rotaHome = require("./src/routes/home")
+// const rotaUpload = require("./src/routes/push")
+// const rotaDownload = require("./src/routes/get")
+// const rotaFolder = require("./src/routes/folder")
+// const rotaViewer = require("./src/routes/view")
 
 const app = express()
 
@@ -31,11 +38,18 @@ app.use(express.urlencoded({extended: true}))
 
 // Rotas
 
-app.use('/', rotaHome)
-app.use('/push', rotaUpload)
-app.use('/get', rotaDownload)
-app.use('/folder', rotaFolder)
-app.use('/view', rotaViewer)
+//api
+
+app.use('/api', apiFiles)
+app.use('/api/services', apiServices)
+
+//front
+
+// app.use('/', rotaHome)
+// app.use('/push', rotaUpload)
+// app.use('/get', rotaDownload)
+// app.use('/folder', rotaFolder)
+// app.use('/view', rotaViewer)
 
 let server = app.listen(porta, () => console.log("Servidor Iniciado! IP: http://localhost:" + porta))
 

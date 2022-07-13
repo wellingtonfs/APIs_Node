@@ -2,6 +2,7 @@ require('dotenv/config');
 
 const utilsPath = {
     dirData: process.env.DIR_USER_DATA,
+    dirBackup: process.env.DIR_BACKUP
 }
 
 const join = function (params = [], opt = { convertToPlatform: true }){
