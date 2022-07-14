@@ -3,7 +3,7 @@ const rota = express.Router()
 
 const FileService = require('../../services/fileServices')
 
-rota.get('/', async (req, res) => {
+rota.get('/list', async (req, res) => {
     const data = FileService.listFolders()
 
     if ( data.error ) return res.status(500).json({ error: "erro desconhecido" })
@@ -11,7 +11,7 @@ rota.get('/', async (req, res) => {
     return res.status(200).json(data)
 })
 
-rota.post('/', async (req, res) => {
+rota.post('/list', async (req, res) => {
     const { folder, file } = req.body
 
     if ( !folder ) return res.status(400).json({ error: "argumento necessário: 'folder', argumento opcional: 'file'" })

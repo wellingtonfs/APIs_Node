@@ -9,11 +9,11 @@ const apiServices = require("./src/routes/api/services")
 
 //front
 
-// const rotaHome = require("./src/routes/home")
+const frontHome = require("./src/routes/front/home")
 // const rotaUpload = require("./src/routes/push")
 // const rotaDownload = require("./src/routes/get")
 // const rotaFolder = require("./src/routes/folder")
-// const rotaViewer = require("./src/routes/view")
+const frontViewer = require("./src/routes/front/view")
 
 const app = express()
 
@@ -45,11 +45,11 @@ app.use('/api/services', apiServices)
 
 //front
 
-// app.use('/', rotaHome)
+app.use('/', frontHome)
 // app.use('/push', rotaUpload)
 // app.use('/get', rotaDownload)
 // app.use('/folder', rotaFolder)
-// app.use('/view', rotaViewer)
+app.use('/view', frontViewer)
 
 let server = app.listen(porta, () => console.log("Servidor Iniciado! IP: http://localhost:" + porta))
 
