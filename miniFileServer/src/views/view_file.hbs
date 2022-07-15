@@ -22,25 +22,76 @@
         return mydiv
     }
 
-    window.onload = () => {
-        let files = {{{files}}}
+    function onReceiveData(data) {        
+        const files = data.files
+
+        $("#titulo").html("")
+        $("#subtitulo").html(files.length.toString() + ' arquivo(s)')
 
         const divPai = document.getElementById("containerForm")
 
-        $("#titulo").html("{{folder}}")
-        $("#subtitulo").html(files.length.toString() + ' arquivo(s)')
-
         if (files.length == 0) {
-            divPai.appendChild(addButton({ label: "Enviar Arquivos", link: "/push", id: "btnCommand" }))
-            divPai.appendChild(addButton({ label: "Voltar", link: "/", id: "btnCommand" }))
+            divPai.appendChild(addButton({ label: "Enviar Arquivos", link: "/upload", id: "btnCommand" }))
+            divPai.appendChild(addButton({ label: "Voltar", link: "/view", id: "btnCommand" }))
             return;
         }
 
         files.forEach(name => {
-            divPai.appendChild(addButton({ label: name, link: "/view/{{folder}}/"+name }))
+            divPai.appendChild(addFileButton({ label: name, name: name }))
         })
 
-        divPai.appendChild(addButton({ label: "Voltar", link: "/", id: "btnCommand" }))
+        divPai.appendChild(addButton({ label: "Voltar", link: "/view", id: "btnCommand" }))
+    }
+
+    function onError(data) {
+        if (data.status == 404) {
+            $("#titulo").html("Pasta não Encontrada")
+            $("#subtitulo").html("")
+            hideLoading()
+            return;
+        }
+
+        $("#titulo").html("Erro Desconhecido")
+        $("#subtitulo").html(data.responseJSON ? data.responseJSON.error : data.error)
+    }
+
+    window.onload = () => {
+        let folder = "{{folder}}"
+        let file = "{{file}}"
+
+        console.log(folder)
+        console.log(file)
+
+        $.ajax({
+            url: "/api/list",
+            type: "POST",
+            data: { folder, file },
+            success: function (data) {
+                onReceiveData(data)
+                hideLoading()
+            },
+            error: function (data) {
+                onError(data)
+                hideLoading()
+            },
+        })
+
+        //const divPai = document.getElementById("containerForm")
+
+        //$("#titulo").html("{{folder}}")
+        //$("#subtitulo").html(files.length.toString() + ' arquivo(s)')
+
+        //if (files.length == 0) {
+        //    divPai.appendChild(addButton({ label: "Enviar Arquivos", link: "/push", id: "btnCommand" }))
+        //    divPai.appendChild(addButton({ label: "Voltar", link: "/", id: "btnCommand" }))
+        //    return;
+        //}
+
+        //files.forEach(name => {
+        //    divPai.appendChild(addButton({ label: name, link: "/view/{{folder}}/"+name }))
+        //})
+
+        //divPai.appendChild(addButton({ label: "Voltar", link: "/", id: "btnCommand" }))
 
         //const selectPasta = document.getElementById("select_type")
         //data["folders"].forEach(name => selectPasta.add(new Option(name, name)))

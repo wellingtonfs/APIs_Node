@@ -1,9 +1,13 @@
 <div id="dialog-form">
-    <form id="containerForm" action="/api/list" method="POST">
+    <div id="containerForm">
+        <h3 id="titulo">Carregando...</h3>
+
+    </div>
+    {{!-- <form id="containerForm" action="/view" method="POST">
         <h3 id="titulo">Carregando...</h3>
 
         <input id="inputFolder" name="folder" type="text" style="display: none;">
-    </form>
+    </form> --}}
 </div>
 
 <div id="loading">
@@ -48,8 +52,9 @@
         if (command.id) mybutton.id = command.id
 
         mybutton.addEventListener("click", () => {
-            $("#inputFolder").prop("value", command.name)
-            document.getElementById("containerForm").submit()
+            window.location.href = encodeURI(`/view/${command.name}`)
+            //$("#inputFolder").prop("value", command.name)
+            //document.getElementById("containerForm").submit()
         })
 
         mydiv.appendChild(mybutton)
@@ -87,6 +92,7 @@
                 hideLoading()
             },
             error: function (data) {
+                $("#titulo").html("Serviço Indisponível")
                 hideLoading()
                 alert((data.responseJSON ? data.responseJSON.error : data.error))
             },

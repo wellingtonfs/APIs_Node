@@ -5,6 +5,20 @@ rota.get('/', async (req, res) => {
     res.render('view')
 })
 
+rota.get('/:dir', async (req, res) => {
+    const folder = decodeURIComponent(req.params.dir)
+
+    res.render('view_folder', { folder: folder })
+})
+
+rota.get('/:dir/:file', async (req, res) => {
+    const folder = decodeURIComponent(req.params.dir)
+    const file = decodeURIComponent(req.params.file)
+
+    res.render('view_file', { folder: folder, file: file })
+})
+
+
 // rota.get('/:dir', async (req, res) => {
 //     const dir = req.params.dir
 
