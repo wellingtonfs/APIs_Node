@@ -1,66 +1,76 @@
 <div id="dialog-form">
     <div id="containerForm">
-        <div id="div_titulo" class="div_row">
-            <h3 id="titulo"></h3>
-            <label id="subtitulo"></label>
+        <h3 id="titulo">Detalhes do Arquivo</h3>
+
+        <div class="div_row">
+            <div class="div_dialog_label">
+                <label>Nome</label>
+            </div>
+            <div class="div_info_field">
+                <label id="label_filename">Nome do arquivo</label>
+            </div>
+        </div>
+
+        <div class="div_row">
+            <div class="div_dialog_label">
+                <label>Tamanho</label>
+            </div>
+            <div class="div_info_field">
+                <label id="label_size">15.3 KB</label>
+            </div>
+        </div>
+
+        <div class="div_row">
+            <div class="div_dialog_label">
+                <label>Data</label>
+            </div>
+            <div class="div_info_field">
+                <label id="label_time">12/07/2022</label>
+            </div>
+        </div>
+
+        <div class="div_row">
+            <button id="btnDownload">Baixar o Arquivo</button>
         </div>
     </div>
 </div>
 
 <script defer>
-    function addButton(command) {
-        const mydiv = document.createElement("div")
-        mydiv.className = "div_row"
+    function onReceiveData(data) {
+        $("#label_filename").html(data.name)
+        $("#label_size").html(data.sizeStr)
+        $("#label_time").html(data.mtime)
 
-        const mybutton = document.createElement("button")
-        mybutton.addEventListener("click", () => window.location.href = encodeURI(command.link))
-        mybutton.textContent = command.label
-
-        if (command.id) mybutton.id = command.id
-
-        mydiv.appendChild(mybutton)
-        return mydiv
-    }
-
-    function onReceiveData(data) {        
-        const files = data.files
-
-        $("#titulo").html("")
-        $("#subtitulo").html(files.length.toString() + ' arquivo(s)')
-
-        const divPai = document.getElementById("containerForm")
-
-        if (files.length == 0) {
-            divPai.appendChild(addButton({ label: "Enviar Arquivos", link: "/upload", id: "btnCommand" }))
-            divPai.appendChild(addButton({ label: "Voltar", link: "/view", id: "btnCommand" }))
-            return;
-        }
-
-        files.forEach(name => {
-            divPai.appendChild(addFileButton({ label: name, name: name }))
+        $("#btnDownload").click(() => {
+            let url = `/api/services/get/${data.folder}/${data.name}`
+            window.location.href = encodeURI(url)
         })
-
-        divPai.appendChild(addButton({ label: "Voltar", link: "/view", id: "btnCommand" }))
+        addGoBackButton("containerForm", document.referrer ? document.referrer : '/view')
     }
 
     function onError(data) {
         if (data.status == 404) {
-            $("#titulo").html("Pasta não Encontrada")
-            $("#subtitulo").html("")
-            hideLoading()
-            return;
+            $("#titulo").html("Arquivo não Encontrado")
+        } else {
+            $("#titulo").html("Erro Desconhecido")
         }
 
-        $("#titulo").html("Erro Desconhecido")
-        $("#subtitulo").html(data.responseJSON ? data.responseJSON.error : data.error)
+        document.querySelectorAll(".div_row").forEach(
+            el => el.style.display = "none"
+        )
+
+        document.getElementById("containerForm").style.justifyContent = "center"
+        addGoBackButton("containerForm", document.referrer ? document.referrer : '/view')
     }
+
+    $("#btnVoltar").click(() => {
+        if (document.referrer) return window.location.href = document.referrer
+        window.location.href = "/"
+    })
 
     window.onload = () => {
         let folder = "{{folder}}"
         let file = "{{file}}"
-
-        console.log(folder)
-        console.log(file)
 
         $.ajax({
             url: "/api/list",
@@ -75,39 +85,20 @@
                 hideLoading()
             },
         })
-
-        //const divPai = document.getElementById("containerForm")
-
-        //$("#titulo").html("{{folder}}")
-        //$("#subtitulo").html(files.length.toString() + ' arquivo(s)')
-
-        //if (files.length == 0) {
-        //    divPai.appendChild(addButton({ label: "Enviar Arquivos", link: "/push", id: "btnCommand" }))
-        //    divPai.appendChild(addButton({ label: "Voltar", link: "/", id: "btnCommand" }))
-        //    return;
-        //}
-
-        //files.forEach(name => {
-        //    divPai.appendChild(addButton({ label: name, link: "/view/{{folder}}/"+name }))
-        //})
-
-        //divPai.appendChild(addButton({ label: "Voltar", link: "/", id: "btnCommand" }))
-
-        //const selectPasta = document.getElementById("select_type")
-        //data["folders"].forEach(name => selectPasta.add(new Option(name, name)))
-
     }
 </script>
 
 <style>
     body {
-        overflow-x: hidden;
+        overflow: hidden;
     }
 
     #dialog-form {
         display: flex;
         width: 100vw;
+        height: 100vh;
         align-items: center;
+        justify-content: center;
         flex-direction: column;
     }
 
@@ -120,38 +111,58 @@
         box-shadow: 5px 10px 8px 10px #888888;
 
         width: 30vw;
+        height: 25vw;
 
-        min-width: 280px;
+        min-width: 250px;
+        min-height: 250px;
         max-width: 700px;
-        margin-top: 5vh;
+        max-height: 500px;
 
         align-items: center;
     }
 
-    #div_titulo {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    #div_titulo > h3 {
+    #dialog-form > #containerForm > h3 {
         color: #333;
-        padding: 0;
-        margin: 0;
-    }
-
-    #div_titulo > label {
-        color: #666;
     }
 
     #dialog-form > #containerForm > .div_row {
         display: flex;
         width: 100%;
-        height: 7vh;
+        height: 100%;
         justify-content: center;
         margin: 5px;
+    }
 
-        min-height: 30px;
-        max-height: 100px;
+    .div_dialog_label {
+        display: flex;
+        background-color: rgb(211, 211, 211);
+        width: 40%;
+        height: 100%;
+
+        border-top-left-radius: 15px;
+        border-bottom-left-radius: 15px;
+
+        align-items: center;
+        justify-content: center;
+    }
+
+    .div_info_field {
+        display: flex;
+        width: 100%;
+
+        border-top-right-radius: 15px;
+        border-bottom-right-radius: 15px;
+        border-width: 0px;
+
+        background-color: white;
+
+        align-items: center;
+        padding-left: 10px;
+    }
+
+    .div_info_field > label {
+        font-size: large;
+        color: #333;
     }
 
     .div_row > button {
@@ -164,21 +175,12 @@
         align-items: center;
         justify-content: center;
 
-        background-color: rgb(211, 211, 211);
-        color: #333;
-        font-size: medium;
+        background-color: rgb(0, 78, 55);
+        color: #fff;
     }
 
     .div_row > button:hover {
         background-color: rgb(0, 255, 128);
-    }
-
-    #btnCommand {
-        background-color: #00000000;
-        color: rgb(0, 78, 55);
-    }
-
-    #btnCommand:hover {
-        color: rgb(0, 255, 128);
+        color: black;
     }
 </style>

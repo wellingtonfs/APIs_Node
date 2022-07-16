@@ -1,6 +1,6 @@
 <div id="dialog-form">
-    <form id="containerForm" action="/push" method="post" enctype="multipart/form-data">
-        <h3>Enviar Arquivo</h3>
+    <form id="containerForm" enctype="multipart/form-data">
+        <h3 id="titulo">Enviar Arquivo</h3>
 
         <div class="div_row">
             <div id="div_inputArquivo">
@@ -12,7 +12,7 @@
             <div class="div_dialog_label">
                 <label class="label_filename">Nome</label>
             </div>
-            <input id="input_nomesala" name="name" type="text" placeholder="Alterar nome?">
+            <input id="input_nomesala" name="filename" type="text" placeholder="Alterar nome?">
             <div id="div_label_ext">
                 <label class="label_filename" id="label_ext"></label>
             </div>
@@ -22,14 +22,7 @@
             <div class="div_dialog_label">
                 <label class="label_filename">Pasta</label>
             </div>
-            <select id="select_type" name="pasta">
-                {{!-- <option value="geral1">Pasta Geral 1</option>
-                <option value="geral2">Pasta Geral 2</option>
-                <option value="geral3">Pasta Geral 3</option>
-                <option value="geral4">Pasta Geral 4</option>
-                <option value="geral5">Pasta Geral 5</option>
-                <option value="geral6">Pasta Geral 6</option> --}}
-            </select>
+            <select id="select_type" name="folder"></select>
         </div>
 
         <input id="inputArquivo" type="file" name="file">
@@ -41,32 +34,7 @@
     </form>
 </div>
 
-<div id="loading">
-    <div id="loading-circle">
-        <label>Enviando...</label>
-    </div>
-</div>
-
 <script defer>
-    window.onload = () => {
-        const folders = {{{folders}}}
-
-        const selectPasta = document.getElementById("select_type")
-        folders.forEach(name => selectPasta.add(new Option(name, name)))
-    }
-
-    function isValidName(name) {
-        return name.match(/^[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ0-9\-_ ]+$/)
-    }
-
-    function showLoading() {
-        document.getElementById("loading").style.display = "flex"
-    }
-
-    function hideLoading() {
-        document.getElementById("loading").style.display = "none"
-    }
-
     $("#div_inputArquivo").click(() => $("#inputArquivo").trigger('click'))
 
     $("#inputArquivo").click((event) => event.stopPropagation()) //tem que parar a propagação, pois um clique aqui, gera um clique na div pai, gerando uma recursão
@@ -82,11 +50,6 @@
 
         $("#input_nomesala").prop("value", firstname)
         $("#label_ext").html(ext)
-        //$("#label_inputArquivo").html(value.target.files[0].name)
-        //$("#input_nomesala").prop("value", value.target.files[0].name)
-
-        //value.target.files[0].name
-        //alert(mylabel)
     })
 
     $("#btnCriarPasta").click(() => {
@@ -100,32 +63,67 @@
 
         showLoading()
 
-        let data = new FormData(document.getElementById("containerForm"))
-        let name = data.get("name")
+        let dataform = new FormData(document.getElementById("containerForm"))
+        let name = dataform.get("filename")
 
-        if (!name) data.set("name", '')
-        else data.set("name", name + $("#label_ext").text())
+        if (!name) dataform.set("filename", '')
+        else dataform.set("filename", name + $("#label_ext").text())
 
         $.ajax({
-            url: "/push/file",
+            url: "/api/services/push",
             type: "POST",
-            data: data,
+            data: dataform,
             contentType: false,
             processData: false,
             success: function (data) {
-                hideLoading()
-                window.location.href = encodeURI(data.url)
+                if (data.responseJSON) data = data.responseJSON
+
+                window.location.href = encodeURI(`/view/${data.folder}/${data.filename}`)
             },
             error: function (data) {
                 hideLoading()
                 alert((data.responseJSON ? data.responseJSON.error : data.error))
             },
         })
-        //.done((msg) => console.log(msg))
-        //.fail((jqXHR, textStatus, msg) => console.log(jqXHR.responseJSON.error))
     })
 
-    //http://localhost:3006/get
+    function onReceiveData(data) {
+        const selectPasta = document.getElementById("select_type")
+        data.folders.forEach(name => selectPasta.add(new Option(name, name)))
+    }
+
+    function onError(data) {
+        if (data.responseJSON.error) {
+            $("#titulo").html(data.responseJSON.error)
+        } else {
+            $("#titulo").html("Serviço Indisponível")
+        }
+    
+        document.querySelectorAll(".div_row").forEach(
+            el => el.style.display = "none"
+        )
+
+        document.getElementById("containerForm").style.justifyContent = "center"
+    }
+
+    window.onload = () => {
+        showLoading()
+
+        $.ajax({
+            url: "/api/list",
+            type: "GET",
+            success: function (data) {
+                onReceiveData(data)
+                hideLoading()
+            },
+            error: function (data) {
+                onError(data)
+                hideLoading()
+            },
+        }).done(() => {
+            addGoBackButton("containerForm", "/")
+        })
+    }
 
 </script>
 
@@ -152,12 +150,12 @@
         box-shadow: 5px 10px 8px 10px #888888;
 
         width: 30vw;
-        height: 22vw;
+        height: 25vw;
 
         min-width: 250px;
-        min-height: 250px;
+        min-height: 270px;
         max-width: 700px;
-        max-height: 500px;
+        max-height: 520px;
 
         align-items: center;
     }
@@ -282,43 +280,5 @@
 
     .div_row > #btnUpload {
         margin-left: 5px;
-    }
-
-    #loading {
-        display: none;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        align-items: center;
-        justify-content: center;
-        background-color: #ffffffaa;
-    }
-
-    #loading > #loading-circle{
-        animation: is-rotating 1s infinite;
-
-        display: flex;
-        width: 10vw;
-        height: 10vw;
-
-        border: 10px solid #aaa;
-        border-top-color: rgb(0, 78, 55);
-        border-radius: 50%;
-
-        align-items: center;
-        justify-content: center;
-    }
-
-    #loading-circle > label {
-        color: #555;
-        font-size: medium;
-    }
-
-    @keyframes is-rotating {
-        to {
-            transform: rotate(1turn);
-        }
     }
 </style>

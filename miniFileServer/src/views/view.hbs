@@ -1,30 +1,10 @@
 <div id="dialog-form">
     <div id="containerForm">
         <h3 id="titulo">Carregando...</h3>
-
-    </div>
-    {{!-- <form id="containerForm" action="/view" method="POST">
-        <h3 id="titulo">Carregando...</h3>
-
-        <input id="inputFolder" name="folder" type="text" style="display: none;">
-    </form> --}}
-</div>
-
-<div id="loading">
-    <div id="loading-circle">
-        <label>Carregando...</label>
     </div>
 </div>
 
 <script defer>
-    function showLoading() {
-        document.getElementById("loading").style.display = "flex"
-    }
-
-    function hideLoading() {
-        document.getElementById("loading").style.display = "none"
-    }
-
     function addButton(command) {
         const mydiv = document.createElement("div")
         mydiv.className = "div_row"
@@ -52,9 +32,8 @@
         if (command.id) mybutton.id = command.id
 
         mybutton.addEventListener("click", () => {
-            window.location.href = encodeURI(`/view/${command.name}`)
-            //$("#inputFolder").prop("value", command.name)
-            //document.getElementById("containerForm").submit()
+            $("#inputFolder").prop("value", command.name)
+            document.getElementById("containerForm").submit()
         })
 
         mydiv.appendChild(mybutton)
@@ -68,7 +47,7 @@
         if (folders.length == 0) {
             $("#titulo").html("Nenhuma pasta encontrada")
             divPai.appendChild(addButton({ label: "Criar Pasta", link: "/push/criar_pasta", id: "btnCommand" }))
-            divPai.appendChild(addButton({ label: "Voltar", link: "/", id: "btnCommand" }))
+            addGoBackButton("containerForm", "/")
             return;
         }
 
@@ -78,7 +57,7 @@
             divPai.appendChild(addFileButton({ label: name, name: name }))
         })
 
-        divPai.appendChild(addButton({ label: "Voltar", link: "/", id: "btnCommand" }))
+        addGoBackButton("containerForm", "/")
     }
 
     window.onload = () => {
@@ -92,15 +71,10 @@
                 hideLoading()
             },
             error: function (data) {
-                $("#titulo").html("Serviço Indisponível")
                 hideLoading()
                 alert((data.responseJSON ? data.responseJSON.error : data.error))
             },
         })
-
-        //const selectPasta = document.getElementById("select_type")
-        //data["folders"].forEach(name => selectPasta.add(new Option(name, name)))
-
     }
 </script>
 
@@ -174,45 +148,5 @@
 
     #btnCommand:hover {
         color: rgb(0, 255, 128);
-    }
-</style>
-
-<style>
-    #loading {
-        display: none;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        align-items: center;
-        justify-content: center;
-        background-color: #ffffff;
-    }
-
-    #loading > #loading-circle{
-        animation: is-rotating 1s infinite;
-
-        display: flex;
-        width: 10vw;
-        height: 10vw;
-
-        border: 10px solid #aaa;
-        border-top-color: rgb(0, 78, 55);
-        border-radius: 50%;
-
-        align-items: center;
-        justify-content: center;
-    }
-
-    #loading-circle > label {
-        color: #555;
-        font-size: medium;
-    }
-
-    @keyframes is-rotating {
-        to {
-            transform: rotate(1turn);
-        }
     }
 </style>

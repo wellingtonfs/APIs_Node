@@ -67,6 +67,7 @@ class FileService {
     
             return {
                 name: file,
+                folder: folder,
                 sizeStr: `${size.toString()} ${escala}`,
                 mtime: mtime.toLocaleString('pt-BR')
             }

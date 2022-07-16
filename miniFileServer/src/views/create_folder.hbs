@@ -16,10 +16,6 @@
 </div>
 
 <script defer>
-    function isValidName(name) {
-        return name.match(/^[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ0-9\-_ ]+$/)
-    }
-
     $("#btnCriar").click(() => {
         let name = $("#input_nomesala").val()
 
@@ -27,23 +23,26 @@
             return alert("Nome inválido:\n\n- Deve conter apenas letras e/ou números;\n- Espaços são permitidos;\n- Nomes vazios não são permitidos.")
         
         $.ajax({
-            url: "/folder/create",
+            url: "/api/services/create_folder",
             type: "POST",
-            data: JSON.stringify({ name: name }),
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            success: function (data) { window.location.href = "/push" },
+            data: { folder: name },
+            success: function (data) {
+                window.location.href = "/upload"
+            },
             error: function (data) { 
                 alert("Servidor diz:\n\n" + (data.responseJSON ? data.responseJSON.error : data.error));
             }
         })
     })
 
-    //http://localhost:3006/get
-
+    addGoBackButton("containerForm", "/")
 </script>
 
 <style>
+    body {
+        overflow: hidden;
+    }
+    
     #dialog-form {
         display: flex;
         width: 100vw;

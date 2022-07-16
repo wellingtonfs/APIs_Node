@@ -8,7 +8,108 @@
 
     <title>Servidor</title>
 </head>
-<body style="background-color: white;">
+<body style="background-color: #00000000;">
+    <div id="loading">
+        <div id="loading-circle">
+            <label>Carregando...</label>
+        </div>
+    </div>
+
+    <script defer>
+        function showLoading() {
+            document.getElementById("loading").style.display = "flex"
+        }
+
+        function hideLoading() {
+            document.getElementById("loading").style.display = "none"
+        }
+
+        function isValidName(name) {
+            return name.match(/^[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ0-9\-_ ]+$/)
+        }
+
+        function addGoBackButton(divPaiName, link) {
+            const divPai = document.getElementById(divPaiName)
+
+            const mydiv = document.createElement("div")
+            mydiv.className = "div_lastrow"
+
+            const mybutton = document.createElement("button")
+            mybutton.textContent = "Voltar"
+            mybutton.id = "btnVoltar"
+            mybutton.type = "button"
+            mybutton.addEventListener("click", () => window.location.href = encodeURI(link))
+
+            mydiv.appendChild(mybutton)
+            divPai.appendChild(mydiv)
+        }
+    </script>
+
+    <style>
+        .div_lastrow {
+            display: flex;
+            width: 100%;
+            height: 50%;
+            justify-content: center;
+            margin: 5px;
+        }
+
+        #btnVoltar {
+            border-width: 0px;
+            width: 100%;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: medium;
+
+            background-color: #00000000;
+            color: rgb(0, 78, 55);
+        }
+
+        #btnVoltar:hover {
+            color: rgb(0, 255, 128);
+        }
+
+        #loading {
+            display: none;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            align-items: center;
+            justify-content: center;
+            background-color: #ffffff;
+        }
+
+        #loading > #loading-circle{
+            animation: is-rotating 1s infinite;
+
+            display: flex;
+            width: 10vw;
+            height: 10vw;
+
+            border: 10px solid #aaa;
+            border-top-color: rgb(0, 78, 55);
+            border-radius: 50%;
+
+            align-items: center;
+            justify-content: center;
+        }
+
+        #loading-circle > label {
+            color: #555;
+            font-size: medium;
+        }
+
+        @keyframes is-rotating {
+            to {
+                transform: rotate(1turn);
+            }
+        }
+    </style>
+
     {{{body}}}
 </body>
 </html>

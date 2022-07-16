@@ -35,10 +35,12 @@ module.exports = {
         },
         filename: (req, file, cb) => {
             if (!FileService.isValidName(req.body.filename, true)) {
-                req.body.filename = file.originalname.trim()
+                req.body.filename = file.originalname
             }
 
-            return cb(null, req.body.filename.trim())
+            req.body.filename = req.body.filename.trim()
+
+            return cb(null, req.body.filename)
         }
     })
 }
