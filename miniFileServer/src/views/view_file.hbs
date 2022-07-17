@@ -46,7 +46,7 @@
 
             window.location.href = encodeURI(url)
         })
-        addGoBackButton("containerForm", document.referrer ? document.referrer : '/view')
+        addGoBackButton("containerForm", encodeURI(`/view/${data.folder}`))
     }
 
     function onError(data) {
@@ -61,7 +61,7 @@
         )
 
         document.getElementById("containerForm").style.justifyContent = "center"
-        addGoBackButton("containerForm", document.referrer ? document.referrer : '/view')
+        addGoBackButton("containerForm", '/view')
     }
 
     $("#btnVoltar").click(() => {

@@ -75,7 +75,7 @@ class MyRobot {
                 linkvideo = await getVideoId(linkvideo)
 
                 links[title] = { 
-                    preview: `/api/youtube/convert/${title}/${linkvideo}`,
+                    preview: `/api/youtube/convert/${linkvideo}`,
                     download: `/api/youtube/get/${linkvideo}`
                 }
             }

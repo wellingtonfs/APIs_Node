@@ -28,9 +28,16 @@ rota.get("/get_name/:videoid", async (req, res) => {
     res.status(200).json(resp)
 })
 
-rota.get("/convert/:title/:url", async (req, res) => {
-    const link = `https://www.youtube.com/watch?v=${decodeURIComponent(req.params.url)}`
-    const title = decodeURIComponent(req.params.title) + '.mp3'
+rota.get("/convert/:url", async (req, res) => {
+    const videoId = decodeURIComponent(req.params.url)
+    const link = `https://www.youtube.com/watch?v=${videoId}`
+
+    const videoname = await MyRobot.getVideoName(videoId)
+    let title = "api_convert.mp3"
+
+    if (videoname !== null) {
+        title = videoname.name + '.mp3'
+    }
 
     try {
         const audio = ytdl(link, { quality: 'highestaudio' })
