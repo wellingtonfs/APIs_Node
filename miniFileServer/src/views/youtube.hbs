@@ -1,0 +1,222 @@
+<div id="dialog-form">
+    <div id="containerForm">
+        <h3 id="titulo">Procurar Música</h3>
+        <div id="div_search" class="div_row">
+            <input id="search_field" name="palavra" placeholder="Pesquise aqui ou cole o link do vídeo">
+            <button id="btnCommand">Buscar</button>
+        </div>
+        <div id="div_itens" class="scroll_style">
+        </div>
+    </div>
+</div>
+
+<script defer>
+    var wait = false
+
+    function isVideoURL(frase) {
+        return frase.includes("youtube.com/watch?v=")
+    }
+
+    function getVideoId(url) {
+        let lookFor = "watch?v="
+        let indexInit = url.indexOf(lookFor) + lookFor.length
+        let indexEnd = url.length
+
+        if (url.includes("&list=")) {
+            lookFor = "&list="
+            indexEnd = url.indexOf(lookFor)
+        }
+
+        return url.slice(indexInit, indexEnd)
+    }
+
+    function addFileButton(command) {
+        const divPai = document.getElementById("div_itens")
+
+        const mydiv = document.createElement("div")
+        mydiv.className = "div_row"
+
+        const mybutton = document.createElement("button")
+        mybutton.textContent = command.label
+        mybutton.type = "button"
+
+        if (command.id) mybutton.id = command.id
+
+        mybutton.addEventListener("click", () => {
+            window.open(encodeURI(command.data.preview))
+        })
+
+        mydiv.appendChild(mybutton)
+        divPai.appendChild(mydiv)
+    }
+
+    function onReceiveData(data) {
+        $("#div_itens").empty()
+
+        for (let title in data) {
+            addFileButton({ label: title, data: data[title] })
+        }
+    }
+
+    $("#btnCommand").click(() => {
+        const inputObj = $("#search_field")
+
+        if (wait) return alert("Espere um momento")
+
+        if (isVideoURL(inputObj.val())) {
+            let videoId = encodeURIComponent(getVideoId(inputObj.val()))
+            window.location.href = `/api/youtube/get/${videoId}`
+            return;
+        }
+
+        if (inputObj.val()) {
+            wait = true
+            showLoading()
+
+            $.ajax({
+                url: "/api/youtube/search",
+                type: "POST",
+                data: { frase: inputObj.val() },
+                success: function (data) {
+                    onReceiveData(data)
+                },
+                error: function (data) {
+                    alert("Erro desconhecido")
+                },
+            }).done(() => {
+                wait = false
+                hideLoading()
+            })
+        } else {
+            alert("Campo de busca em branco")
+        }
+    })
+
+    window.onload = () => {
+        addGoBackButton("containerForm", "/")
+    }
+</script>
+
+<style>
+    body {
+        overflow: hidden;
+    }
+
+    #dialog-form {
+        display: flex;
+        width: 100vw;
+        height: 100vh;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    #dialog-form > #containerForm {
+        display: flex;
+        flex-direction: column;
+        background-color: #f5f5f5;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 5px 10px 8px 10px #888888;
+
+        width: 60vw;
+        height: 60vh;
+
+        min-width: 250px;
+        min-height: 250px;
+        max-width: 700px;
+        max-height: 500px;
+
+        align-items: center;
+        overflow: hidden;
+    }
+
+    #div_titulo {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #div_titulo > h3 {
+        color: #333;
+        padding: 0;
+        margin: 0;
+        text-align: center;
+    }
+
+    #div_itens {
+        display: flex;
+        flex-direction: column;
+
+        width: 100%;
+        height: 100%;
+
+        align-items: center;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .div_row {
+        display: flex;
+        width: 100%;
+        height: 8vh;
+        justify-content: center;
+        margin: 2px;
+
+        min-height: 50px;
+        max-height: 100px;
+    }
+
+    #div_search {
+        margin-bottom: 10px;
+    }
+
+    #div_search > input {
+        display: flex;
+        width: 100%;
+
+        border-width: 0px;
+        border-radius: 15px;
+        outline: 0px;
+        text-align: center;
+    
+        font-size: larger;
+
+        background-color: #e5e5e5;
+        color: #333;
+    }
+
+    #div_search > input::placeholder {
+        color: #999;
+    }
+
+    .div_row > button {
+        display: flex;
+
+        border-radius: 15px;
+        border-width: 0px;
+        width: 100%;
+
+        align-items: center;
+        justify-content: center;
+
+        background-color: rgb(211, 211, 211);
+        color: #333;
+        font-size: medium;
+    }
+
+    .div_row > button:hover {
+        background-color: rgb(0, 255, 128);
+    }
+
+    #btnCommand {
+        background-color: rgb(0, 78, 55);
+        color: rgb(255, 255, 255);
+        width: 25%;
+        margin-left: 5px;
+    }
+
+    #btnCommand:hover {
+        background-color: rgb(0, 255, 128);
+        color: rgb(0, 0, 0);
+    }
+</style>

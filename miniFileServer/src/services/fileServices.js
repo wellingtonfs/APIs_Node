@@ -1,5 +1,5 @@
-const Path = require('../util/path')
-const fs = require('fs')
+import Path from "../util/path.js"
+import fs from "fs"
 
 class FileService {
     constructor () {
@@ -7,6 +7,8 @@ class FileService {
             fs.mkdirSync(Path.dirData)
         if (!fs.existsSync(Path.dirBackup))
             fs.mkdirSync(Path.dirBackup)
+
+        this.maxNameLength = 90
     }
 
     listFolders() {
@@ -88,9 +90,10 @@ class FileService {
 
     isValidName(name, file=false) {
         if (!name) return false
-        if (file) return name.match(/^[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ0-9\-_\. ]+$/)
+        if (name.length > this.maxNameLength) return false
+        if (file) return name.match(/^[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ0-9\-_\.\(\) ]+$/)
     
-        return name.match(/^[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ0-9\-_ ]+$/)
+        return name.match(/^[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ0-9\-_\(\) ]+$/)
     }
 
     isCorrectFile(folder, file) {
@@ -166,4 +169,4 @@ class FileService {
     }
 }
 
-module.exports = new FileService()
+export default new FileService()

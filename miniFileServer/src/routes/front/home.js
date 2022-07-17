@@ -1,4 +1,5 @@
-const express = require('express')
+import express from "express"
+
 const rota = express.Router()
 
 rota.get('/', (req, res) => {
@@ -13,4 +14,4 @@ rota.get('/criar_pasta', (req, res) => {
     res.render('create_folder')
 })
 
-module.exports = rota
+export default rota

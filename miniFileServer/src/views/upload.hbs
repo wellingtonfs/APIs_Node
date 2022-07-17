@@ -61,12 +61,22 @@
 
         if (document.getElementById("inputArquivo").files.length == 0) return alert("Nenhum arquivo selecionado!")
 
+        if (!$("#select_type option:selected").val()) return alert("Nenhuma pasta selecionada")
+
         showLoading()
 
         let dataform = new FormData(document.getElementById("containerForm"))
         let name = dataform.get("filename")
 
         if (!name) dataform.set("filename", '')
+        else if (!isValidName(name)) {
+            return alert("Nome Inválido\n\nDeve conter apenas:\n\
+                        \n- Letras\
+                        \n- Números\
+                        \n- Espaços\
+                        \n- Parênteses\
+                        \n\nMáximo 90 caracteres")
+        }
         else dataform.set("filename", name + $("#label_ext").text())
 
         $.ajax({

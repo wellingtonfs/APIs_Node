@@ -1,7 +1,8 @@
-const express = require('express')
-const rota = express.Router()
+import express from "express"
 
-const FileService = require('../../services/fileServices')
+import FileService from "../../services/fileServices.js"
+
+const rota = express.Router()
 
 rota.get('/list', async (req, res) => {
     const data = FileService.listFolders()
@@ -12,7 +13,7 @@ rota.get('/list', async (req, res) => {
 })
 
 rota.post('/list', async (req, res) => {
-    const { folder, file } = req.body
+    let { folder, file } = req.body
 
     if ( !folder ) return res.status(400).json({ error: "argumento necessário: 'folder', argumento opcional: 'file'" })
 
@@ -33,4 +34,4 @@ rota.post('/list', async (req, res) => {
     return res.status(200).json(data)
 })
 
-module.exports = rota
+export default rota

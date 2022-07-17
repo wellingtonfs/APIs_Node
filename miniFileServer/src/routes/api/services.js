@@ -1,16 +1,15 @@
-const express = require('express')
+import express from "express"
+import multer from "multer"
+
+import configMulter from "../../modules/multer.js"
+import FileService from "../../services/fileServices.js"
+
 const rota = express.Router()
-
-const multer = require('multer')
-
-const configMulter = require('../../modules/multer')
-const FileService = require('../../services/fileServices')
-
 const upload = multer(configMulter).single('file')
 
 rota.get('/get/:folder/:filename', async (req, res) => {
-    const folder = req.params.folder
-    const filename = req.params.filename
+    const folder = decodeURIComponent(req.params.folder)
+    const filename = decodeURIComponent(req.params.filename)
 
     let data = FileService.getFileDetails(folder, filename)
 
@@ -24,7 +23,7 @@ rota.get('/get/:folder/:filename', async (req, res) => {
 })
 
 rota.post('/create_folder', async (req, res) => {
-    const folder = req.body.folder
+    const folder = decodeURIComponent(req.body.folder)
 
     const data = FileService.createFolder(folder)
 
@@ -45,4 +44,4 @@ rota.post('/push', async (req, res) => {
     })
 })
 
-module.exports = rota
+export default rota

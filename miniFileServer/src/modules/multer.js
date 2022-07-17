@@ -1,8 +1,8 @@
-const multer = require('multer')
+import multer from 'multer'
 
-const FileService = require('../services/fileServices')
+import FileService from "../services/fileServices.js"
 
-module.exports = {
+export default {
     storage: multer.diskStorage({
         destination: (req, file, cb) => {
             //console.log(req)

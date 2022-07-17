@@ -1,31 +1,41 @@
-const express = require("express")
-const morgan = require('morgan')
-const exphbs  = require('express-handlebars');
+import path from "path"
+import dotenv from "dotenv"
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+import express from "express";
+import morgan from "morgan";
+import exphbs from "express-handlebars";
 
 //API
 
-const apiFiles = require("./src/routes/api/files")
-const apiServices = require("./src/routes/api/services")
+import apiFiles from "./src/routes/api/files.js"
+import apiServices from "./src/routes/api/services.js"
+import apiYoutube from "./src/routes/api/youtube.js"
+
+import MyRobot from "./src/services/robot.js"
 
 //front
 
-const frontHome = require("./src/routes/front/home")
-// const rotaUpload = require("./src/routes/push")
-// const rotaDownload = require("./src/routes/get")
-// const rotaFolder = require("./src/routes/folder")
-const frontViewer = require("./src/routes/front/view")
+import frontHome from "./src/routes/front/home.js"
+import frontViewer from "./src/routes/front/view.js"
+import rotaYoutube from "./src/routes/front/youtube.js"
 
 const app = express()
 
 // Definições
-const porta = 3006
+const porta = 3005
 
 //app.use(morgan(':method :url :status :res[content-length] - :response-time ms'))
 app.use(morgan('dev'))
 
 app.engine('hbs', exphbs({extname: '.hbs'}));
 app.set('view engine', 'hbs');
-app.set('views', './src/views');
+app.set('views', __dirname + '/src/views');
 
 app.use(express.static(__dirname + '/recursos'));
 app.use(express.json())
@@ -42,18 +52,22 @@ app.use(express.urlencoded({extended: true}))
 
 app.use('/api', apiFiles)
 app.use('/api/services', apiServices)
+app.use('/api/youtube', apiYoutube)
 
 //front
 
 app.use('/', frontHome)
-// app.use('/push', rotaUpload)
-// app.use('/get', rotaDownload)
-// app.use('/folder', rotaFolder)
 app.use('/view', frontViewer)
+app.use('/youtube', rotaYoutube)
 
-let server = app.listen(porta, () => console.log("Servidor Iniciado! IP: http://localhost:" + porta))
+let server = app.listen(process.env.PORTA, () => console.log("Servidor Iniciado! IP: http://localhost:" + process.env.PORTA))
 
-process.on('uncaughtException', () => server.close());
-process.on('unhandledRejection', () => server.close());
-process.on('SIGINT', () => server.close());
-process.on('SIGTERM', () => server.close());
+async function clear() {
+    server.close()
+    await MyRobot.close()
+}
+
+process.on('uncaughtException', clear);
+process.on('unhandledRejection', clear);
+process.on('SIGINT', clear);
+process.on('SIGTERM', clear);

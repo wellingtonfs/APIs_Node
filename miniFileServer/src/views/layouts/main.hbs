@@ -25,7 +25,9 @@
         }
 
         function isValidName(name) {
-            return name.match(/^[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ0-9\-_ ]+$/)
+            if (!name) return false
+            if (name.length > 90) return false
+            return name.match(/^[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ0-9\-_\(\) ]+$/)
         }
 
         function addGoBackButton(divPaiName, link) {
@@ -46,10 +48,24 @@
     </script>
 
     <style>
+        .scroll_style::-webkit-scrollbar {
+            width: 5px;
+            margin: 1px;
+        }
+
+        .scroll_style::-webkit-scrollbar-track {
+            background: #aaa;
+        }
+
+        .scroll_style::-webkit-scrollbar-thumb {
+            background: rgb(0, 78, 55);
+        }
+
         .div_lastrow {
             display: flex;
             width: 100%;
-            height: 50%;
+            padding-top: 10px;
+            padding-bottom: 5px;
             justify-content: center;
             margin: 5px;
         }

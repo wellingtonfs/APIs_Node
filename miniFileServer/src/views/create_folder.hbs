@@ -19,8 +19,14 @@
     $("#btnCriar").click(() => {
         let name = $("#input_nomesala").val()
 
-        if (!isValidName(name))
-            return alert("Nome inválido:\n\n- Deve conter apenas letras e/ou números;\n- Espaços são permitidos;\n- Nomes vazios não são permitidos.")
+        if (!isValidName(name)) {
+           return alert("Nome Inválido\n\nDeve conter apenas:\n\
+                        \n- Letras\
+                        \n- Números\
+                        \n- Espaços\
+                        \n- Parênteses\
+                        \n\nMáximo 90 caracteres")
+        }
         
         $.ajax({
             url: "/api/services/create_folder",

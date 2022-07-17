@@ -1,4 +1,11 @@
-require('dotenv/config');
+import path from "path"
+import dotenv from "dotenv"
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
 const utilsPath = {
     dirData: process.env.DIR_USER_DATA,
@@ -59,9 +66,11 @@ const useDir = (dir) => {
     return dir
 }
 
-module.exports = utilsPath
-module.exports.join = join
-module.exports.isCorrectDir = isCorrectDir
-module.exports.isCorrectName = isCorrectName
-module.exports.normDir = normDir
-module.exports.useDir = useDir
+export default {
+    ...utilsPath,
+    join,
+    isCorrectDir,
+    isCorrectName,
+    normDir,
+    useDir
+}
