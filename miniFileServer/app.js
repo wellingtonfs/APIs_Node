@@ -10,14 +10,31 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 import express from "express";
 import morgan from "morgan";
 import exphbs from "express-handlebars";
+import mongoose from "mongoose";
+
+// import https from "https";
+// import fs from "fs";
+
+// const key = fs.readFileSync(__dirname + '/certificados/selfsigned.key');
+// const cert = fs.readFileSync(__dirname + '/certificados/selfsigned.crt');
+
+// const options = {
+//     key: key,
+//     cert: cert
+// };
+
+// import getShortUrl from "./src/services/robotEncurtador.js";
+
+// (async function () {
+//     console.log(await getShortUrl("https://179.189.133.252:3005/api/b2fea38"))
+// })()
 
 //API
 
+import apiHome from "./src/routes/api/home.js"
 import apiFiles from "./src/routes/api/files.js"
 import apiServices from "./src/routes/api/services.js"
 import apiYoutube from "./src/routes/api/youtube.js"
-
-import MyRobot from "./src/services/robot.js"
 
 //front
 
@@ -28,9 +45,7 @@ import rotaYoutube from "./src/routes/front/youtube.js"
 const app = express()
 
 // Definições
-const porta = 3005
 
-//app.use(morgan(':method :url :status :res[content-length] - :response-time ms'))
 app.use(morgan('dev'))
 
 app.engine('hbs', exphbs({extname: '.hbs'}));
@@ -46,11 +61,30 @@ app.use(function(err, req, res, next){
 })
 app.use(express.urlencoded({extended: true}))
 
+// Banco de dados
+mongoose.Promise = global.Promise
+
+var connectMongo = () => {
+    console.log("Tentando conectar ao banco de dados...")
+    mongoose.connect(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWD}@api-youtube.nlanral.mongodb.net/?retryWrites=true&w=majority`, {
+        keepAlive: true,
+        keepAliveInitialDelay: 300000
+    }).then(() => {
+        console.log("Conectado ao Banco de Dados!")
+    }).catch((err) => {
+        console.log("Não foi possivel se conectar ao banco de dados! Erro: " + err)
+        setTimeout(() => connectMongo(), 5000)
+    })
+}
+
+connectMongo()
+
 // Rotas
 
 //api
 
-app.use('/api', apiFiles)
+app.use('/api', apiHome)
+app.use('/api/files', apiFiles)
 app.use('/api/services', apiServices)
 app.use('/api/youtube', apiYoutube)
 
@@ -64,7 +98,6 @@ let server = app.listen(process.env.PORTA, () => console.log("Servidor Iniciado!
 
 async function clear() {
     server.close()
-    await MyRobot.close()
 }
 
 process.on('uncaughtException', clear);

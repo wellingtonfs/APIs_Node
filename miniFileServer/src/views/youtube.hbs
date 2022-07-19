@@ -1,5 +1,5 @@
-<div id="dialog-form">
-    <div id="containerForm">
+<div class="dialog-form">
+    <div id="containerForm" class="contrainerInterno">
         <h3 id="titulo">Procurar Música</h3>
         <div id="div_search" class="div_row">
             <input id="search_field" name="palavra" placeholder="Pesquise aqui ou cole o link do vídeo">
@@ -10,11 +10,68 @@
     </div>
 </div>
 
+<div id="dialogMusic" class="dialog-form">
+    <div id="dialogMusicInterno" class="contrainerInterno">
+        <div class="div_dialog_section">
+            <label id="dialog-title"></label>
+            <audio controls name="media" preload="none">
+                <source type="audio/mpeg">
+            </audio>
+        </div>
+        <div class="div_dialog_section">
+            <button id="btnBaixar">Baixar</button>
+            <label id="label_link">Carregando...</label>
+        </div>
+    </div>
+</div>
+
 <script defer>
-    var wait = false
+    const state = {
+        wait: false,
+        video: {
+            id: null,
+            title: null
+        },
+        idTimeOut: null,
+        musicAction: false
+    }
 
     function isVideoURL(frase) {
         return frase.includes("youtube.com/watch?v=")
+    }
+
+    function showMusicAction() {
+        if (state.video.id === null) return;
+        state.musicAction = true
+
+        document.getElementById("dialogMusic").style.display = "flex"
+
+        //atualizando nome
+        document.querySelector("#dialog-title").textContent = state.video.title
+
+        //atualizar player de música
+        document.querySelector("source").src = `${window.location.origin}/api/${state.video.id}`
+        document.querySelector("audio").load()
+
+        //obter link da música
+        $.ajax({
+            url: `/api/youtube/get_link/${state.video.id}`,
+            type: "GET",
+            success: function (data) {
+                $("#label_link").html(window.location.origin + data.url)
+            },
+            error: function (data) {
+                if (data.status == 404) alert("Vídeo não encontrado")
+                else alert("Erro desconhecido")
+                hideMusicAction()
+            },
+        })
+    }
+
+    function hideMusicAction() {
+        state.musicAction = false
+        document.querySelector("audio").pause()
+        document.getElementById("dialogMusic").style.display = "none"
     }
 
     function getVideoId(url) {
@@ -30,20 +87,20 @@
         return url.slice(indexInit, indexEnd)
     }
 
-    function addFileButton(command) {
+    function addVideoButton(video) {
         const divPai = document.getElementById("div_itens")
 
         const mydiv = document.createElement("div")
         mydiv.className = "div_row"
 
         const mybutton = document.createElement("button")
-        mybutton.textContent = command.label
+        mybutton.textContent = video.title
         mybutton.type = "button"
 
-        if (command.id) mybutton.id = command.id
-
         mybutton.addEventListener("click", () => {
-            window.open(encodeURI(command.data.preview))
+            state.video.id = video.id
+            state.video.title = video.title
+            showMusicAction()
         })
 
         mydiv.appendChild(mybutton)
@@ -53,15 +110,31 @@
     function onReceiveData(data) {
         $("#div_itens").empty()
 
-        for (let title in data) {
-            addFileButton({ label: title, data: data[title] })
+        for (let video of data.videos) {
+            //let link = `/api/youtube/convert/${video.id}`
+            addVideoButton(video)
         }
     }
+
+    $("#dialogMusicInterno").click((e) => e.stopPropagation())
+
+    $("#dialogMusic").click(() => {
+        hideMusicAction()
+    })
+
+    $("#btnBaixar").click(() => {
+        if (state.video.id === null) return;
+
+        hideMusicAction()
+
+        let link = `/api/youtube/get/${state.video.id}`
+        window.location.href = link
+    })
 
     $("#btnCommand").click(() => {
         const inputObj = $("#search_field")
 
-        if (wait) return alert("Espere um momento")
+        if (state.idTimeOut !== null) return alert("Espere um momento")
 
         if (isVideoURL(inputObj.val())) {
             let videoId = encodeURIComponent(getVideoId(inputObj.val()))
@@ -70,8 +143,13 @@
         }
 
         if (inputObj.val()) {
-            wait = true
-            showLoading()
+            showLoading({ backColor: '#ffffffaa', text: "Buscando..." })
+
+            state.idTimeOut = setTimeout(() => {
+                hideLoading()
+                alert("Erro desconhecido, tente novamente mais tarde")
+                window.location.href = '/'
+            }, 15000)
 
             $.ajax({
                 url: "/api/youtube/search",
@@ -84,7 +162,8 @@
                     alert("Erro desconhecido")
                 },
             }).done(() => {
-                wait = false
+                clearTimeout(state.idTimeOut)
+                state.idTimeOut = null
                 hideLoading()
             })
         } else {
@@ -94,6 +173,16 @@
 
     window.onload = () => {
         addGoBackButton("containerForm", "/")
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key == "Enter" && !state.musicAction) {
+                $("#btnCommand").click()
+            }
+        })
+    }
+
+    window.onbeforeunload = () => {
+        if (state.idTimeOut !== null) clearTimeout(state.idTimeOut)
     }
 </script>
 
@@ -102,16 +191,19 @@
         overflow: hidden;
     }
 
-    #dialog-form {
+    .dialog-form {
         display: flex;
-        width: 100vw;
-        height: 100vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         align-items: center;
         justify-content: center;
         flex-direction: column;
     }
 
-    #dialog-form > #containerForm {
+    .dialog-form > .contrainerInterno {
         display: flex;
         flex-direction: column;
         background-color: #f5f5f5;
@@ -189,7 +281,7 @@
         color: #999;
     }
 
-    .div_row > button {
+    button {
         display: flex;
 
         border-radius: 15px;
@@ -204,7 +296,7 @@
         font-size: medium;
     }
 
-    .div_row > button:hover {
+    button:hover {
         background-color: rgb(0, 255, 128);
     }
 
@@ -218,5 +310,70 @@
     #btnCommand:hover {
         background-color: rgb(0, 255, 128);
         color: rgb(0, 0, 0);
+    }
+</style>
+
+<style>
+    #dialogMusic {
+        display: none;
+        background-color: #00000022;
+    }
+
+    #dialogMusicInterno {
+        width: 30vw;
+        height: 15vw;
+
+        min-width: 125px;
+        min-height: 90px;
+        
+        max-height: 300px;
+    }
+
+    .div_dialog_section {
+        display: flex;
+        width: 100%;
+        flex-direction: column;
+        height: 100%;
+        align-items: center;
+    }
+
+    #div_link {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #div_link > #label_title_link {
+        color: #333;
+    }
+
+    #label_link {
+        padding: 5px;
+        padding-left: 15px;
+        padding-right: 15px;
+        border-radius: 15px;
+        font-size: large;
+        background-color: #eaeaea;
+        color: #050;
+        margin: 3px;
+    }
+
+    #btnBaixar {
+        height: 80%;
+        max-height: 80px;
+        font-size: large;
+        font-weight: bold;
+        color: #555;
+    }
+
+    audio {
+        width: 100%;
+        height: 80%;
+    }
+
+    #dialog-title {
+        color: #333;
+        font-size: large;
+        text-align: center;
     }
 </style>

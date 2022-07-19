@@ -22,6 +22,19 @@ rota.get('/get/:folder/:filename', async (req, res) => {
     )
 })
 
+rota.get('/view/:folder/:filename', async (req, res) => {
+    const folder = decodeURIComponent(req.params.folder)
+    const filename = decodeURIComponent(req.params.filename)
+
+    let data = FileService.getFileDetails(folder, filename)
+
+    if ( data.error ) return res.status(404).json({ error: data.error })
+
+    res.sendFile(
+        FileService.getFilePath(folder, filename)
+    )
+})
+
 rota.post('/create_folder', async (req, res) => {
     const folder = decodeURIComponent(req.body.folder)
 

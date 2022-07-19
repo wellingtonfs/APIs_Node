@@ -80,7 +80,7 @@
         let folder = "{{folder}}"
 
         $.ajax({
-            url: "/api/list",
+            url: "/api/files/list",
             type: "POST",
             data: { folder },
             success: function (data) {
@@ -97,7 +97,7 @@
 
 <style>
     body {
-        overflow-x: hidden;
+        overflow: hidden;
     }
 
     #dialog-form {
@@ -121,7 +121,7 @@
         height: 25vw;
 
         min-width: 250px;
-        min-height: 250px;
+        min-height: 450px;
         max-width: 700px;
         max-height: 500px;
 
@@ -171,7 +171,7 @@
     .div_row > button {
         display: flex;
 
-        border-radius: 15px;
+        border-radius: 10px;
         border-width: 0px;
         width: 100%;
 

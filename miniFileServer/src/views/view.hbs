@@ -69,7 +69,7 @@
         showLoading()
 
         $.ajax({
-            url: "/api/list",
+            url: "/api/files/list",
             type: "GET",
             success: function (data) {
                 onReceiveData(data)
@@ -109,7 +109,7 @@
         height: 25vw;
 
         min-width: 250px;
-        min-height: 250px;
+        min-height: 450px;
         max-width: 700px;
         max-height: 500px;
 

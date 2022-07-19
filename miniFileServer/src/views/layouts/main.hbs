@@ -9,6 +9,8 @@
     <title>Servidor</title>
 </head>
 <body style="background-color: #00000000;">
+    {{{body}}}
+    
     <div id="loading">
         <div id="loading-circle">
             <label>Carregando...</label>
@@ -16,7 +18,9 @@
     </div>
 
     <script defer>
-        function showLoading() {
+        function showLoading(options = { backColor: '#ffffff', text: "Carregando..." }) {
+            document.querySelector('#loading-circle label').textContent = options.text
+            document.getElementById("loading").style.backgroundColor = options.backColor
             document.getElementById("loading").style.display = "flex"
         }
 
@@ -125,7 +129,5 @@
             }
         }
     </style>
-
-    {{{body}}}
 </body>
 </html>

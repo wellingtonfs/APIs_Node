@@ -120,7 +120,7 @@
         showLoading()
 
         $.ajax({
-            url: "/api/list",
+            url: "/api/files/list",
             type: "GET",
             success: function (data) {
                 onReceiveData(data)

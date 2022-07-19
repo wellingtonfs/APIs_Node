@@ -1,6 +1,7 @@
 # dependencies
 /node_modules
 /testes
+/certificados
 /.pnp
 .pnp.js
 

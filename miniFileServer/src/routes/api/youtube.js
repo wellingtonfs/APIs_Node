@@ -1,38 +1,52 @@
 import express from "express"
 import ytdl from "ytdl-core";
-import MyRobot from "../../services/robot.js"
+
+import ApiYoutube from "../../services/api_youtube.js";
+import UrlParser from "../../services/urlparseServices.js"
 
 const rota = express.Router()
 
 rota.post("/search", async (req, res) => {
-    try {
     const frase = req.body.frase
 
-    let resp = await MyRobot.getResults(frase)
+    let resp = await ApiYoutube.getResults(frase)
 
     if (resp === null) return res.status(500).json({ error: "Erro desconhecido" })
 
     res.status(200).json(resp)
-    } catch (e) {
-        console.log(e)
-    }
 })
 
 rota.get("/get_name/:videoid", async (req, res) => {
     const videoId = req.params.videoid
 
-    let resp = await MyRobot.getVideoName(videoId)
+    let resp = await ApiYoutube.getVideoName(videoId)
 
     if (resp === null) return res.status(404).json({ error: "Vídeo não encontrado" })
 
     res.status(200).json(resp)
 })
 
-rota.get("/convert/:url", async (req, res) => {
-    const videoId = decodeURIComponent(req.params.url)
+rota.get("/get_link/:videoid", async (req, res) => {
+    const videoId = req.params.videoid
+
+    let resp = await ApiYoutube.getVideoName(videoId)
+
+    if (resp === null) return res.status(404).json({ error: "Vídeo não encontrado" })
+
+    //let url = `${UrlParser.CONSTS.URL_YOUTUBE_DOWNLOAD}/${videoId}`
+
+    //await UrlParser.saveVideoId(videoId, url)
+
+    res.status(200).json({
+        url: `${UrlParser.CONSTS.URL_ENCURTADOR}/${videoId}`
+    })
+})
+
+rota.get("/convert/:videoid", async (req, res) => {
+    const videoId = decodeURIComponent(req.params.videoid)
     const link = `https://www.youtube.com/watch?v=${videoId}`
 
-    const videoname = await MyRobot.getVideoName(videoId)
+    const videoname = await ApiYoutube.getVideoName(videoId)
     let title = "api_convert.mp3"
 
     if (videoname !== null) {
@@ -51,11 +65,11 @@ rota.get("/convert/:url", async (req, res) => {
     }
 })
 
-rota.get("/get/:url", async (req, res) => {
-    const videoId = decodeURIComponent(req.params.url)
+rota.get("/get/:videoid", async (req, res) => {
+    const videoId = decodeURIComponent(req.params.videoid)
     const link = `https://www.youtube.com/watch?v=${videoId}`
 
-    const videoname = await MyRobot.getVideoName(videoId)
+    const videoname = await ApiYoutube.getVideoName(videoId)
     let title = "api_convert.mp3"
 
     if (videoname !== null) {
@@ -67,7 +81,6 @@ rota.get("/get/:url", async (req, res) => {
 
         res.contentType("audio/mpeg")
         res.attachment(title)
-        //res.set("Content-Transfer-Encoding", "binary")
         audio.pipe(res)
 
     } catch (e) {
