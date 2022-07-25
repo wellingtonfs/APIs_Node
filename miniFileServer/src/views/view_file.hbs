@@ -49,31 +49,36 @@
 </div>
 
 <script defer>
-    function onReceiveData(data) {
-        let date = data.mtime.slice(0, data.mtime.lastIndexOf(':'))
-        let url = window.location.origin + data.url
+    $("#btnVoltar").click(() => {
+        if (document.referrer) return window.location.href = document.referrer
+        window.location.href = "/"
+    })
 
-        $("#label_filename").html(data.name)
-        $("#label_size").html(data.sizeStr)
+    function onReceiveData(res, dados) {
+        let date = res.mtime.slice(0, res.mtime.lastIndexOf(':'))
+        let url = encodeURI(window.location.origin + res.url)
+
+        $("#label_filename").html(res.name)
+        $("#label_size").html(res.sizeStr)
         $("#label_time").html(date)
         $("#label_link").html(url)
 
         $("#btnView").click(() => {
-            let url = `/api/services/view/${data.folder}/${data.name}`
-
-            window.open(encodeURI(url))
+            url = encodeURI(`/api/services/view/${res.folder}/${res.name}`)
+            window.open(url)
         })
 
         $("#btnDownload").click(() => {
-            let url = `/api/services/get/${data.folder}/${data.name}`
-
-            window.location.href = encodeURI(url)
+            window.location.href = url
         })
     }
 
-    function onError(data) {
-        if (data.status == 404) {
+    function onError(res, dados) {
+        if (res.status == 404) {
             $("#titulo").html("Arquivo não Encontrado")
+        } else if (res.status == 401) {
+            const password = prompt("Senha da pasta: ")
+            return makeRequest({ ...dados, password })
         } else {
             $("#titulo").html("Erro Desconhecido")
         }
@@ -85,10 +90,22 @@
         document.getElementById("containerForm").style.justifyContent = "center"
     }
 
-    $("#btnVoltar").click(() => {
-        if (document.referrer) return window.location.href = document.referrer
-        window.location.href = "/"
-    })
+
+    async function makeRequest(dados) {
+        $.ajax({
+            url: "/api/files/list",
+            type: "POST",
+            data: dados,
+            success: function (res) {
+                onReceiveData(res, dados)
+                hideLoading()
+            },
+            error: function (res) {
+                onError(res, dados)
+                hideLoading()
+            },
+        })
+    }
 
     window.onload = () => {
         let folder = "{{folder}}"
@@ -96,19 +113,7 @@
 
         addGoBackButton("containerForm", encodeURI(`/view/${folder}`))
 
-        $.ajax({
-            url: "/api/files/list",
-            type: "POST",
-            data: { folder, file },
-            success: function (data) {
-                onReceiveData(data)
-                hideLoading()
-            },
-            error: function (data) {
-                onError(data)
-                hideLoading()
-            },
-        })
+        makeRequest({ folder, file })
     }
 </script>
 
@@ -134,15 +139,28 @@
         border-radius: 20px;
         box-shadow: 5px 10px 8px 10px #888888;
 
-        width: 30vw;
-        height: 25vw;
+        width: 60vw;
+        height: 50vh;
 
         min-width: 250px;
-        min-height: 350px;
-        max-width: 700px;
-        max-height: 500px;
+        min-height: 250px;
 
         align-items: center;
+    }
+
+    @media (orientation: portrait) {
+        #dialog-form > #containerForm {
+            width: 90vw;
+            height: 90vh;
+            border-radius: 0px;
+            box-shadow: 5px 10px 8px 10px #88888800;
+        }
+    }
+
+    @media (max-height: 520px) and (orientation: landscape) {
+        #dialog-form > #containerForm {
+            height: 80vh;
+        }
     }
 
     #dialog-form > #containerForm > h3 {
@@ -183,6 +201,7 @@
 
         align-items: center;
         padding-left: 10px;
+        overflow-x: auto;
     }
 
     .div_info_field > label {

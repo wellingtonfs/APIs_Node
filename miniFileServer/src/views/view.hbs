@@ -105,16 +105,23 @@
         border-radius: 20px;
         box-shadow: 5px 10px 8px 10px #888888;
 
-        width: 30vw;
-        height: 25vw;
+        width: 60vw;
+        height: 85vh;
 
         min-width: 250px;
-        min-height: 450px;
-        max-width: 700px;
-        max-height: 500px;
+        min-height: 250px;
 
         align-items: center;
         overflow: hidden;
+    }
+
+    @media (orientation: portrait) {
+        #dialog-form > #containerForm {
+            width: 90vw;
+            height: 90vh;
+            border-radius: 0px;
+            box-shadow: 5px 10px 8px 10px #88888800;
+        }
     }
 
     #div_itens {

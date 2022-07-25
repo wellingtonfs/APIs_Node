@@ -2,78 +2,43 @@
     <div id="containerForm" class="contrainerInterno">
         <h3 id="titulo">Procurar Música</h3>
         <div id="div_search" class="div_row">
-            <input id="search_field" name="palavra" placeholder="Pesquise aqui ou cole o link do vídeo">
-            <button id="btnCommand">Buscar</button>
+            <input id="search_field" name="palavra" placeholder="Pesquise ou cole o link">
+            <button id="btnCommand">Ok</button>
         </div>
         <div id="div_itens" class="scroll_style">
         </div>
-    </div>
-</div>
 
-<div id="dialogMusic" class="dialog-form">
-    <div id="dialogMusicInterno" class="contrainerInterno">
-        <div class="div_dialog_section">
-            <label id="dialog-title"></label>
+        <div class="div_row div_dialog_section">
+            <label id="dialog-title">Nenhuma Música Tocando</label>
             <audio controls name="media" preload="none">
                 <source type="audio/mpeg">
             </audio>
-        </div>
-        <div class="div_dialog_section">
-            <button id="btnBaixar">Baixar</button>
-            <label id="label_link">Carregando...</label>
         </div>
     </div>
 </div>
 
 <script defer>
+    var rotaApi = "/api/youtube"
+
+    //cria os estados do cliente
     const state = {
-        wait: false,
         video: {
             id: null,
             title: null
         },
-        idTimeOut: null,
-        musicAction: false
+        videolist: null,
+        nextlist: null,
+        previousVideo: null
     }
 
+    // ---------------------------------------------------------------------------------- funções uteis
+
+    //verifica se uma string é um link do youtube
     function isVideoURL(frase) {
         return frase.includes("youtube.com/watch?v=")
     }
 
-    function showMusicAction() {
-        if (state.video.id === null) return;
-        state.musicAction = true
-
-        document.getElementById("dialogMusic").style.display = "flex"
-
-        //atualizando nome
-        document.querySelector("#dialog-title").textContent = state.video.title
-
-        //atualizar player de música
-        document.querySelector("source").src = `${window.location.origin}/api/${state.video.id}`
-        document.querySelector("audio").load()
-
-        //obter link da música
-        $.ajax({
-            url: `/api/youtube/get_link/${state.video.id}`,
-            type: "GET",
-            success: function (data) {
-                $("#label_link").html(window.location.origin + data.url)
-            },
-            error: function (data) {
-                if (data.status == 404) alert("Vídeo não encontrado")
-                else alert("Erro desconhecido")
-                hideMusicAction()
-            },
-        })
-    }
-
-    function hideMusicAction() {
-        state.musicAction = false
-        document.querySelector("audio").pause()
-        document.getElementById("dialogMusic").style.display = "none"
-    }
-
+    //dado um link do youtube, retorna o se ID
     function getVideoId(url) {
         let lookFor = "watch?v="
         let indexInit = url.indexOf(lookFor) + lookFor.length
@@ -87,108 +52,315 @@
         return url.slice(indexInit, indexEnd)
     }
 
+    //realiza uma requisição para obter a imagem de fundo do audio atual
+    function changeBackground() {
+        const body = document.querySelector('body')
+
+        $.ajax({
+            url: `${rotaApi}/details/${state.video.id}`,
+            type: "GET",
+            success: function (data) {
+                body.style.background = `url('${ data.img }')`
+            },
+            error: function (data) {
+                body.style.backgroundColor = "#fff"
+            },
+        })
+    }
+
+    //Carrega uma música para ser tocada
+    function loadMusic() {
+        //Preparar o Audio
+        const audio = document.querySelector("audio")
+        document.querySelector("#dialog-title").textContent = state.video.title
+        document.querySelector("head title").text = state.video.title
+
+        audio.pause()
+
+        document.querySelector("source").src = `${window.location.origin}/api/${state.video.id}`
+
+        audio.load()
+        audio.play()
+
+        //Mudar Background
+        changeBackground()
+
+        //Buscar Semelhantes
+        makeRequestSimilar()
+    }
+
+    //volta uma música
+    function previousMusic() {
+        if (state.previousVideo === null) return;
+
+        //salvar anterior
+        const currentVideo = state.video
+        state.video = state.previousVideo
+        state.previousVideo = currentVideo
+        loadMusic()
+    }
+
+    //avança para a próxima música, evitando músicas grandes (maiores que 12 minutos)
+    //aqui é realizado um sorteio entre as cinco músicas do topo da lista que sejam menores que 12 minutos
+    function nextMusic() {
+        if (state.nextlist !== null && state.nextlist.length > 0) {
+            let lista = state.nextlist.filter(({ duration: v }) => {
+                return v[0] < 1 && v[1] < 12;
+            })
+            
+            //caso não tenha músicas pequenas, sorteia com as que tem
+            if (lista.length == 0) lista = state.nextlist;
+
+            const tam = Math.min(lista.length, 5)
+            const aleatorio = Math.floor(Math.random() * tam) % tam
+
+            const { itr } = lista.at(aleatorio)
+
+            //salvar anterior
+            state.previousVideo = state.video
+
+            //próximo
+            state.video = state.videolist.at(itr)
+            loadMusic()
+        } else if (state.videolist !== null && state.videolist.length > 0) {
+            const tam = Math.min(state.videolist.length, 5)
+            const aleatorio = Math.floor(Math.random() * tam) % tam
+
+            //salvar anterior
+            state.previousVideo = state.video
+
+            //próximo
+            state.video = state.videolist[aleatorio]
+            loadMusic()
+        }
+    }
+
+    //adiciona um item a lista de músicas
     function addVideoButton(video) {
         const divPai = document.getElementById("div_itens")
 
+        //adiciona o container
         const mydiv = document.createElement("div")
+        mydiv.id = video.id
         mydiv.className = "div_row"
 
+        //adiciona a imagem do vídeo
+        const divimg = document.createElement("div")
+        divimg.className = "div_img"
+        
+        //adiciona o titulo que é um botão
         const mybutton = document.createElement("button")
         mybutton.textContent = video.title
         mybutton.type = "button"
+        mybutton.className = "back_gray"
 
-        mybutton.addEventListener("click", () => {
-            state.video.id = video.id
-            state.video.title = video.title
-            showMusicAction()
-        })
+        //adiciona a duração da música
+        const divTime = document.createElement("div")
+        divTime.className = "div_duration back_gray"
 
+        const labelDuration = document.createElement("label")
+        labelDuration.textContent = "..."
+
+        divTime.appendChild(labelDuration)
+
+        //adiciona o botão de download
+        const divDownload = document.createElement("div")
+        divDownload.className = "div_download back_gray"
+        divDownload.onclick = () => {
+            window.location.href = `${rotaApi}/get/${video.id}`
+        }
+
+        //aninha todos os itens
+        mydiv.appendChild(divimg)
         mydiv.appendChild(mybutton)
+        mydiv.appendChild(divTime)
+        mydiv.appendChild(divDownload)
         divPai.appendChild(mydiv)
+
+        //cria o evento de click do botão do titulo
+        mybutton.addEventListener("click", () => {
+            state.video = video
+            loadMusic()
+        })
     }
 
+    //essa função auxilia a função 'updateDetails' recebendo os dados e atualizando na página
+    function onSuccesUpdateDetails(data, itr) {
+        //atualiza a lista de músicas
+        state.nextlist.push({
+            itr: itr,
+            duration: data.duration
+        })
+
+        //dada uma duração como: [h, m, s] transforma em: ["hh"?, "mm", "ss"]
+        let duration = data.duration.map((v, idx) => {
+            if (idx == 0 && v < 1) return ''
+
+            let nv = v.toString()
+            return nv.length == 1 ? '0' + nv : nv
+        })
+
+        //junta a duração em uma string do tipo: hh:mm:ss ou mm:ss
+        duration = duration[0] ? duration.join(':') : duration.slice(1).join(':')
+
+        document.querySelector(`[id="${data.id}"] label`).textContent = duration
+
+        const img = document.querySelector(`[id="${data.id}"] .div_img`)
+        img.style.background = `url("${data.img}")`
+        img.style.backgroundSize = "100% 100%"
+        img.onclick = () => window.open(`https://www.youtube.com/watch?v=${data.id}`)
+    }
+
+    //assincronamente atualiza os detalhes de cada música de acordo com seus metadados
+    async function updateDetails() {
+        for (const itr in state.videolist) {
+            //para cada música: faz a requisição para buscar os detalhes
+            
+            $.ajax({
+                url: `${rotaApi}/details/${state.videolist[itr].id}`,
+                type: "GET",
+                success: (data) => onSuccesUpdateDetails(data, itr)
+            })
+        }
+    }
+
+    //quando os dados são recebidos das requisições de search, similar e ById
+    //essa função atualiza toda a lista de músicas
     function onReceiveData(data) {
         $("#div_itens").empty()
 
         for (let video of data.videos) {
-            //let link = `/api/youtube/convert/${video.id}`
             addVideoButton(video)
+        }
+
+        //configurar próximo
+        if (data.videos.length > 0) {
+            state.nextlist = new Array()
+            state.videolist = data.videos
+            updateDetails()
+        } else {
+            state.nextlist = null
         }
     }
 
-    $("#dialogMusicInterno").click((e) => e.stopPropagation())
+    // ---------------------------------------------------------------------------------- funções de requisição
 
-    $("#dialogMusic").click(() => {
-        hideMusicAction()
-    })
+    //realiza uma requisição de acordo com a frase de busca
+    function makeRequestSearch(frase) {
+        showLoading({ backColor: '#ffffffaa', text: "Buscando..." })
 
-    $("#btnBaixar").click(() => {
-        if (state.video.id === null) return;
-
-        hideMusicAction()
-
-        let link = `/api/youtube/get/${state.video.id}`
-        window.location.href = link
-    })
-
-    $("#btnCommand").click(() => {
-        const inputObj = $("#search_field")
-
-        if (state.idTimeOut !== null) return alert("Espere um momento")
-
-        if (isVideoURL(inputObj.val())) {
-            let videoId = encodeURIComponent(getVideoId(inputObj.val()))
-            window.location.href = `/api/youtube/get/${videoId}`
-            return;
-        }
-
-        if (inputObj.val()) {
-            showLoading({ backColor: '#ffffffaa', text: "Buscando..." })
-
-            state.idTimeOut = setTimeout(() => {
-                hideLoading()
-                alert("Erro desconhecido, tente novamente mais tarde")
-                window.location.href = '/'
-            }, 15000)
-
-            $.ajax({
-                url: "/api/youtube/search",
-                type: "POST",
-                data: { frase: inputObj.val() },
-                success: function (data) {
-                    onReceiveData(data)
-                },
-                error: function (data) {
-                    alert("Erro desconhecido")
-                },
-            }).done(() => {
-                clearTimeout(state.idTimeOut)
-                state.idTimeOut = null
-                hideLoading()
-            })
-        } else {
-            alert("Campo de busca em branco")
-        }
-    })
-
-    window.onload = () => {
-        addGoBackButton("containerForm", "/")
-
-        document.addEventListener("keydown", (event) => {
-            if (event.key == "Enter" && !state.musicAction) {
-                $("#btnCommand").click()
-            }
+        $.ajax({
+            url: `${rotaApi}/search`,
+            type: "POST",
+            data: { frase },
+            success: function (data) {
+                onReceiveData(data)
+            },
+            error: function (data) {
+                alert(data.responseJSON ? data.responseJSON.error : "Erro desconhecido")
+            },
+        }).always(() => {
+            hideLoading()
         })
     }
 
-    window.onbeforeunload = () => {
-        if (state.idTimeOut !== null) clearTimeout(state.idTimeOut)
+    //realiza uma requisição de acordo com os videos similares ao que está tocando no momento
+    function makeRequestSimilar() {
+        showLoading({ backColor: '#ffffff00', text: "" })
+
+        $.ajax({
+            url: `${rotaApi}/search?similar=${state.video.id}`,
+            type: "POST",
+            success: function (data) {
+                onReceiveData(data)
+            },
+            error: function (data) {
+                alert(data.responseJSON ? data.responseJSON.error : "Erro desconhecido")
+            },
+        }).always(() => {
+            hideLoading()
+        })
+    }
+
+    //realiza uma requisição de acordo com o id de um vídeo
+    function makeRequestById(videoId) {
+        showLoading({ backColor: '#ffffffaa', text: "Buscando..." })
+
+        $.ajax({
+            url: `${rotaApi}/details/${videoId}`,
+            type: "GET",
+            success: function (data) {
+                onReceiveData({
+                    videos: [data]
+                })
+            },
+            error: function (data) {
+                alert(data.responseJSON ? data.responseJSON.error : "Erro desconhecido")
+            },
+        }).always(() => {
+            hideLoading()
+        })
+    }
+
+    // ---------------------------------------------------------------------------------- funções eventos
+
+    //evento do click do botão 'Ok'
+    $("#btnCommand").click(() => {
+        const inputObj = $("#search_field")
+
+        if (!inputObj.val())
+            return alert("Campo de busca em branco")
+
+        if (isVideoURL(inputObj.val())) {
+            let videoId = getVideoId(inputObj.val())
+            return makeRequestById(videoId)
+        }
+
+        makeRequestSearch(inputObj.val())
+    })
+
+    //quando a página termina de carregar
+    window.onload = () => {
+        //configurar rota
+        rotaApi = "{{rota}}"
+
+        //configurar o audio
+        let audio = document.querySelector("audio")
+        audio.volume = 0.2
+        audio.onended = nextMusic
+
+        //adiciona o botão de voltar
+        addGoBackButton("containerForm", "/")
+
+        //cria os eventos de teclado
+        document.addEventListener("keydown", (event) => {
+            if (isLoading()) return;
+
+            if (event.key == "Enter") {
+                $("#btnCommand").click()
+            } else if (event.key == "ArrowLeft") {
+                previousMusic()
+            } else if (event.key == "ArrowRight") {
+                nextMusic()
+            }
+        })
+
+        //caso receba um id como parametro, faz a pesquisa
+        let videoId = "{{videoId}}"
+
+        if (videoId) {
+            makeRequestById(videoId)
+        }
     }
 </script>
 
 <style>
     body {
         overflow: hidden;
+    }
+
+    .back_gray {
+        background-color: rgb(211, 211, 211);
     }
 
     .dialog-form {
@@ -206,33 +378,42 @@
     .dialog-form > .contrainerInterno {
         display: flex;
         flex-direction: column;
-        background-color: #f5f5f5;
+        background-color: #f5f5f5f5;
         padding: 20px;
         border-radius: 20px;
-        box-shadow: 5px 10px 8px 10px #888888;
+        box-shadow: 5px 5px 5px 5px #888888cc;
 
         width: 60vw;
-        height: 60vh;
+        height: 85vh;
 
         min-width: 250px;
         min-height: 250px;
-        max-width: 700px;
-        max-height: 500px;
 
         align-items: center;
         overflow: hidden;
     }
 
-    #div_titulo {
-        flex-direction: column;
-        align-items: center;
+    @media (orientation: portrait) {
+        .dialog-form > .contrainerInterno {
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0px;
+            background-color: #fff;
+            box-shadow: 5px 10px 8px 10px #88888800;
+        }
     }
 
-    #div_titulo > h3 {
-        color: #333;
-        padding: 0;
-        margin: 0;
-        text-align: center;
+    @media (max-height: 520px) and (orientation: landscape) {
+        .dialog-form > .contrainerInterno {
+            width: 80vw;
+            height: 100vh;
+            border-radius: 0px;
+            box-shadow: 5px 10px 8px 10px #88888800;
+        }
+
+        .dialog-form > .contrainerInterno > h3 {
+            display: none;
+        }
     }
 
     #div_itens {
@@ -249,13 +430,61 @@
 
     .div_row {
         display: flex;
+        flex-direction: row;
         width: 100%;
         height: 8vh;
         justify-content: center;
         margin: 2px;
 
         min-height: 50px;
-        max-height: 100px;
+    }
+
+    .div_img {
+        display: flex;
+        width: 10%;
+        align-items: center;
+
+        background-image: url("/loading.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+        width: 15%;
+
+        opacity: 1;
+    }
+
+    .div_duration {
+        display: flex;
+        width: 10%;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .div_download {
+        display: flex;
+        width: 10%;
+        align-items: center;
+
+        background-image: url("/download.png");
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+
+        opacity: 1;
+    }
+
+    .div_img:hover {
+        opacity: 0.5;
+    }
+
+    .div_download:hover {
+        opacity: 0.5;
     }
 
     #div_search {
@@ -267,7 +496,7 @@
         width: 100%;
 
         border-width: 0px;
-        border-radius: 15px;
+        border-radius: 10px;
         outline: 0px;
         text-align: center;
     
@@ -284,14 +513,12 @@
     button {
         display: flex;
 
-        border-radius: 15px;
         border-width: 0px;
         width: 100%;
 
         align-items: center;
         justify-content: center;
 
-        background-color: rgb(211, 211, 211);
         color: #333;
         font-size: medium;
     }
@@ -303,72 +530,26 @@
     #btnCommand {
         background-color: rgb(0, 78, 55);
         color: rgb(255, 255, 255);
-        width: 25%;
+        width: 10%;
         margin-left: 5px;
+        border-radius: 10px;
     }
 
     #btnCommand:hover {
         background-color: rgb(0, 255, 128);
         color: rgb(0, 0, 0);
     }
-</style>
-
-<style>
-    #dialogMusic {
-        display: none;
-        background-color: #00000022;
-    }
-
-    #dialogMusicInterno {
-        width: 30vw;
-        height: 15vw;
-
-        min-width: 125px;
-        min-height: 90px;
-        
-        max-height: 300px;
-    }
 
     .div_dialog_section {
-        display: flex;
-        width: 100%;
         flex-direction: column;
-        height: 100%;
-        align-items: center;
-    }
-
-    #div_link {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    #div_link > #label_title_link {
-        color: #333;
-    }
-
-    #label_link {
-        padding: 5px;
-        padding-left: 15px;
-        padding-right: 15px;
-        border-radius: 15px;
-        font-size: large;
-        background-color: #eaeaea;
-        color: #050;
-        margin: 3px;
-    }
-
-    #btnBaixar {
-        height: 80%;
-        max-height: 80px;
-        font-size: large;
-        font-weight: bold;
-        color: #555;
+        padding-top: 15px;
     }
 
     audio {
         width: 100%;
         height: 80%;
+        min-height: 25px;
+        background-color: #f5f5f5f5;
     }
 
     #dialog-title {
@@ -376,4 +557,5 @@
         font-size: large;
         text-align: center;
     }
+
 </style>

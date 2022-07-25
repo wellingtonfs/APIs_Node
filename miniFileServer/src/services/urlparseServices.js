@@ -11,7 +11,7 @@ const CONSTS = {
 }
 
 function getUrlForDownload(folder, file) {
-    return `/api/services/get/${folder}/${file}`
+    return `${CONSTS.URL_DOWNLOAD}/${folder}/${file}`
 }
 
 async function getUrlById(id) {

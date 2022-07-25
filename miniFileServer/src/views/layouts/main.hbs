@@ -18,14 +18,24 @@
     </div>
 
     <script defer>
+        const globalState = {
+            isLoading: false
+        }
+
+        function isLoading() {
+            return globalState.isLoading
+        }
+
         function showLoading(options = { backColor: '#ffffff', text: "Carregando..." }) {
             document.querySelector('#loading-circle label').textContent = options.text
             document.getElementById("loading").style.backgroundColor = options.backColor
             document.getElementById("loading").style.display = "flex"
+            globalState.isLoading = true
         }
 
         function hideLoading() {
             document.getElementById("loading").style.display = "none"
+            globalState.isLoading = false
         }
 
         function isValidName(name) {
@@ -72,6 +82,12 @@
             padding-bottom: 5px;
             justify-content: center;
             margin: 5px;
+        }
+
+        @media (max-height: 520px) and (orientation: landscape) {
+            .div_lastrow {
+                display: none;
+            }
         }
 
         #btnVoltar {

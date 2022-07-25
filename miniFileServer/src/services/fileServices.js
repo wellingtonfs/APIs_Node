@@ -1,6 +1,8 @@
 import Path from "../util/path.js"
 import fs from "fs"
 
+import Folder from "../models/Folder.js"
+
 class FileService {
     constructor () {
         if (!fs.existsSync(Path.dirData))
@@ -9,6 +11,24 @@ class FileService {
             fs.mkdirSync(Path.dirBackup)
 
         this.maxNameLength = 90
+    }
+
+    async folderIsProtected(folder) {
+        const res = await Folder.findOne({ name: folder })
+
+        if (!res) return null
+        return res.passwd
+    }
+
+    async setFolderProtection(folder, passwd) {
+        const res = await Folder.findOne({ name: folder })
+
+        if (res) return null
+
+        await Folder.create({
+            name: folder,
+            passwd
+        })
     }
 
     listFolders() {

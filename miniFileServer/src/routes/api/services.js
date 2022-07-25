@@ -1,5 +1,6 @@
 import express from "express"
 import multer from "multer"
+import fs from "fs"
 
 import configMulter from "../../modules/multer.js"
 import FileService from "../../services/fileServices.js"
@@ -15,11 +16,10 @@ rota.get('/get/:folder/:filename', async (req, res) => {
 
     if ( data.error ) return res.status(404).json({ error: data.error })
 
-    res.attachment()
-    res.type("application/octet-stream");
-    res.sendFile(
-        FileService.getFilePath(folder, filename)
-    )
+    const stream = fs.createReadStream(FileService.getFilePath(folder, filename))
+
+    res.attachment(filename)
+    stream.pipe(res)
 })
 
 rota.get('/view/:folder/:filename', async (req, res) => {

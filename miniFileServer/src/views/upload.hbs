@@ -159,15 +159,28 @@
         border-radius: 20px;
         box-shadow: 5px 10px 8px 10px #888888;
 
-        width: 30vw;
-        height: 25vw;
+        width: 50vw;
+        height: 50vh;
 
         min-width: 250px;
-        min-height: 270px;
-        max-width: 700px;
-        max-height: 520px;
+        min-height: 250px;
 
         align-items: center;
+    }
+
+    @media (orientation: portrait) {
+        #dialog-form > #containerForm {
+            width: 90vw;
+            height: 80vh;
+            border-radius: 0px;
+            box-shadow: 5px 10px 8px 10px #88888800;
+        }
+    }
+
+    @media (max-height: 520px) and (orientation: landscape) {
+        #dialog-form > #containerForm {
+            height: 80vh;
+        }
     }
 
     #dialog-form > #containerForm > h3 {
