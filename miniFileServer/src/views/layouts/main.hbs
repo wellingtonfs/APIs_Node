@@ -9,6 +9,10 @@
     <title>Servidor</title>
 </head>
 <body style="background-color: #00000000;">
+    <script>
+        window.userip = "desconhecido";
+    </script>
+
     {{{body}}}
     
     <div id="loading">
@@ -58,6 +62,31 @@
 
             mydiv.appendChild(mybutton)
             divPai.appendChild(mydiv)
+        }
+
+        //saber o ip da pessoa
+        function getIp(callback) {
+            function response(s) {
+                callback(window.userip);
+
+                s.onload = s.onerror = null;
+                document.body.removeChild(s);
+            }
+
+            function trigger() {
+                var s = document.createElement("script");
+                s.async = true;
+                s.onload = () => response(s)
+                s.onerror = () => response(s)
+
+                s.src = "https://l2.io/ip.js?var=userip";
+                document.body.appendChild(s);
+            }
+
+            if (/^(interactive|complete)$/i.test(document.readyState))
+                trigger();
+            else
+                document.addEventListener('DOMContentLoaded', trigger);
         }
     </script>
 

@@ -31,10 +31,20 @@ import MyRobot from "./src/services/robot.js"
 
 const app = express()
 
-// Definições
-const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
+// Log
 
-app.use(morgan('[:date[web]] IP ( :remote-addr ) ROTA ( :method :url :status ) :response-time ms', {
+if (!fs.existsSync(process.env.DIR_LOG))
+    fs.mkdirSync(process.env.DIR_LOG, { recursive: true })
+
+const accessLogStream = fs.createWriteStream(path.join(process.env.DIR_LOG, 'access.log'), { flags: 'a' })
+
+// Definições
+
+morgan.token("userip", (req, res) => {
+    return req.body.ip ? req.body.ip : ''
+})
+
+app.use(morgan('[:date[web]] IP ( :userip ) ROTA ( :method :url :status ) :response-time ms', {
     skip: function (req, res) {
         if (["/favicon.ico", "/download.png", "/loading.png"].includes(req.originalUrl)) return true
 

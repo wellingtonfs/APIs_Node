@@ -14,4 +14,8 @@ rota.get('/criar_pasta', (req, res) => {
     res.render('create_folder')
 })
 
+rota.post('/checkin', (req, res) => {
+    res.sendStatus(200)
+})
+
 export default rota

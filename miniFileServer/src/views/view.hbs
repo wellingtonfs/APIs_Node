@@ -80,6 +80,15 @@
                 alert((data.responseJSON ? data.responseJSON.error : data.error))
             },
         })
+
+        //salvar ip como checkIn
+        getIp(ip => {
+            $.ajax({
+                url: "/checkin",
+                type: "POST",
+                data: { ip: ip }
+            })
+        })
     }
 </script>
 
