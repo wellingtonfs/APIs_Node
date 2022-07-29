@@ -12,6 +12,7 @@ import express from "express";
 import exphbs from "express-handlebars";
 import mongoose from "mongoose";
 import morgan from "morgan";
+import moment from "moment-timezone"
 
 //API
 
@@ -20,6 +21,7 @@ import apiFiles from "./src/routes/api/files.js"
 import apiServices from "./src/routes/api/services.js"
 import apiYoutube from "./src/routes/api/youtube.js"
 import apiYoutubeRobot from "./src/routes/api/yt_robot.js"
+import apiReplicAI from "./src/routes/api/replicai.js"
 
 //front
 
@@ -41,12 +43,18 @@ const accessLogStream = fs.createWriteStream(path.join(process.env.DIR_LOG, 'acc
 // Definições
 
 morgan.token("userip", (req, res) => {
-    return req.body.ip ? req.body.ip : ''
+    return (req.body && req.body.ip) ? req.body.ip : ''
 })
 
-app.use(morgan('[:date[web]] IP ( :userip ) ROTA ( :method :url :status ) :response-time ms', {
+morgan.token("mydate", (req, res) => {
+    return moment().tz("America/Sao_Paulo").format("DD/MM/YYYY HH:mm")
+})
+
+app.use(morgan('[:mydate] IP ( :userip ) ROTA ( :method :url :status ) :response-time ms', {
     skip: function (req, res) {
-        if (["/favicon.ico", "/download.png", "/loading.png"].includes(req.originalUrl)) return true
+        if (req.originalUrl.lastIndexOf('/') <= 0)
+            if ([".png", ".ico", ".jpg"].some((item) => req.originalUrl.endsWith(item)))
+                return true
 
         return req.originalUrl.startsWith("/api")
     },
@@ -59,11 +67,12 @@ app.set('views', __dirname + '/src/views');
 
 app.use(express.static(__dirname + '/recursos'));
 app.use(express.json())
-app.use(function(err, req, res, next){
-    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) 
-    return res.status(400).send({ error: 'Error parsing data' })
+app.use((error, req, res, next) => {
+    if (error instanceof SyntaxError)
+        return res.status(400).send({ error: 'error parsing data: invalid json' })
     next()
 })
+
 app.use(express.urlencoded({extended: true}))
 
 // Banco de dados
@@ -93,6 +102,7 @@ app.use('/api/files', apiFiles)
 app.use('/api/services', apiServices)
 app.use('/api/youtube', apiYoutube)
 app.use('/api/youtube-robot', apiYoutubeRobot)
+app.use('/api/replicai', apiReplicAI)
 
 //front
 
@@ -102,9 +112,12 @@ app.use('/youtube', rotaYoutube)
 
 let server = app.listen(process.env.PORTA, () => console.log("Servidor Iniciado! IP: http://localhost:" + process.env.PORTA))
 
-async function clear() {
+async function clear(error) {
+    console.log("Erro:", error ? error : "desconhecido")
+
     server.close()
-    MyRobot.close()
+    await MyRobot.close()
+    process.exit(1);
 }
 
 process.on('uncaughtException', clear);

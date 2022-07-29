@@ -16,6 +16,7 @@ class ApiYoutube {
 
     constructor () {
         this.keys = process.env.API_KEY.split(',').map(k => k.trim())
+        this.ponteiroKey = 0
     }
 
     getVideoId(url) {
@@ -45,13 +46,19 @@ class ApiYoutube {
     }
 
     async makeRequest(parametros) {
-        for (const key of this.keys) {
-            let url = `${ApiYoutube.API_URL}/${parametros}&key=${key}`
+        let count = 0
+
+        while (count < this.keys.length) {
+            let url = `${ApiYoutube.API_URL}/${parametros}&key=${this.keys[this.ponteiroKey]}`
+
+            this.ponteiroKey = (this.ponteiroKey + 1) % this.keys.length
 
             let response = await fetch(url)
             response = await response.json()
 
             if (!response.error) return response
+
+            count += 1
         }
 
         return null

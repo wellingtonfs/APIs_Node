@@ -13,6 +13,12 @@
         window.userip = "desconhecido";
     </script>
 
+    <div id="div_creditos_background">
+        <label>
+            Imagem de <a href="https://pixabay.com/pt/users/jganjos-4149006/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1941336">Janderson Garcia dos Anjos jganjos</a> por <a href="https://pixabay.com/pt//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1941336">Pixabay</a>
+        </label>
+    </div>
+
     {{{body}}}
     
     <div id="loading">
@@ -88,6 +94,8 @@
             else
                 document.addEventListener('DOMContentLoaded', trigger);
         }
+
+        document.querySelector("body").style.background = `url("${window.location.origin}/back.png")`
     </script>
 
     <style>
@@ -171,6 +179,24 @@
         @keyframes is-rotating {
             to {
                 transform: rotate(1turn);
+            }
+        }
+
+        #div_creditos_background {
+            position: absolute;
+            bottom: 5px;
+            height: 2vh;
+            transform: scaleY(0.8);
+            opacity: 0.6;
+        }
+
+        #div_creditos_background > label {
+            color: #555;
+        }
+
+        @media (max-height: 520px) or (orientation: portrait) {
+            #div_creditos_background {
+                display: none;
             }
         }
     </style>

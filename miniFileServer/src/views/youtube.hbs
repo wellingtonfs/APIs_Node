@@ -9,10 +9,14 @@
         </div>
 
         <div class="div_row div_dialog_section">
-            <label id="dialog-title">Nenhuma Música Tocando</label>
-            <audio controls name="media" preload="none">
-                <source type="audio/mpeg">
-            </audio>
+            <div id="trackAudio">
+                <label id="dialog-title">Nenhuma Música Tocando</label>
+                <audio controls name="media" preload="none">
+                    <source type="audio/mpeg">
+                </audio>
+            </div>
+            <div id="div_download_cur_audio" class="div_download">
+            </div>
         </div>
     </div>
 </div>
@@ -319,6 +323,14 @@
         makeRequestSearch(inputObj.val())
     })
 
+    //botão utilizado para baixar o audio que está sendo reproduzido
+    $("#div_download_cur_audio").click(() => {
+        if (state.video.id === null)
+            return;
+
+        window.location.href = `${rotaApi}/get/${state.video.id}`
+    })
+
     //quando a página termina de carregar
     window.onload = () => {
         //configurar rota
@@ -331,6 +343,19 @@
 
         //adiciona o botão de voltar
         addGoBackButton("containerForm", "/")
+
+        document.addEventListener("copy", () => {
+            try {
+                if (state.video.id === null)
+                    return;
+
+                navigator.clipboard.writeText(
+                    `${window.location.origin}/youtube/${state.video.id}`
+                )
+            } catch (e) {
+                console.log(e)
+            }
+        })
 
         //cria os eventos de teclado
         document.addEventListener("keydown", (event) => {
@@ -448,6 +473,14 @@
         min-height: 50px;
     }
 
+
+    #div_download_cur_audio {
+        background-image: url("/download.png");
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
     .div_img {
         display: flex;
         width: 10%;
@@ -550,15 +583,16 @@
     }
 
     .div_dialog_section {
-        flex-direction: column;
-        padding-top: 15px;
+        flex-direction: row;
+        margin-top: 15px;
     }
 
-    audio {
+    #trackAudio {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         width: 100%;
-        height: 80%;
-        min-height: 25px;
-        background-color: #f5f5f5f5;
+        height: 100%;
     }
 
     #dialog-title {
@@ -567,4 +601,10 @@
         text-align: center;
     }
 
+    audio {
+        width: 100%;
+        height: 100%;
+        min-height: 25px;
+        background-color: #f5f5f5f5;
+    }
 </style>

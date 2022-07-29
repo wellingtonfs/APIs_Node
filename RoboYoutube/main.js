@@ -1,7 +1,7 @@
 import puppeteer from "puppeteer"
 
 async function main() {
-    const browser = await puppeteer.launch({ headless: false, product: "firefox" });
+    const browser = await puppeteer.launch({ headless: false });
 
     let ini = performance.now()
 

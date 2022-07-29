@@ -17,7 +17,8 @@ class MyRobot {
         this.browser = null
 
         this.counter = 0
-
+        this.shouldReconnect = true
+    
         this.start()
         this.getVideoId = this.getVideoId.bind(this)
         this.checkCounter = this.checkCounter.bind(this)
@@ -31,6 +32,18 @@ class MyRobot {
                 '--disable-setuid-sandbox',
             ]
         });
+
+        this.browser.on("disconnected", async () => {
+            console.log("Desconectado do browser")
+
+            if (this.shouldReconnect) {
+                await this.browser.close()
+                await this.start()
+                console.log("Reconectado?", this.browser.isConnected() ? "Sim" : "Não")
+            } else {
+                console.log("Não devo reconectar")
+            }
+        })
     }
 
     getVideoId(url) {
@@ -298,6 +311,7 @@ class MyRobot {
     }
 
     async close() {
+        this.shouldReconnect = false
         await this.browser.close()
     }
 }
