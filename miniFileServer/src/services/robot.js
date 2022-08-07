@@ -77,12 +77,12 @@ class MyRobot {
         }
 
         numeros = numeros.replace(/^,+|,+$/g, '').split(',')
-        numeros = numeros.map(txt => Number.parseInt(txt))
+        numeros = numeros
+            .reverse()
+            .map((txt, idx) => Number.parseInt(txt) * (60 ** idx))
+            .reduce((ac, n) => ac + n)
 
-        if (numeros.length >= 3)
-            return numeros.slice(-3)
-    
-        return new Array(3 - numeros.length).fill(0).concat(numeros)
+        return this.convertIntToDuration(numeros)
     }
 
     convertDurationToInt(duration) {
@@ -112,6 +112,7 @@ class MyRobot {
         }
 
         //caso não ache
+
         let data;
         let imgname = "maxresdefault.jpg";
 
@@ -312,7 +313,8 @@ class MyRobot {
 
     async close() {
         this.shouldReconnect = false
-        await this.browser.close()
+        if (this.browser !== null)
+            await this.browser.close();
     }
 }
 

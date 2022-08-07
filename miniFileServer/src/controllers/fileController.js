@@ -23,6 +23,29 @@ export async function Home(req, res) {
     res.redirect(urlparse)
 }
 
+export async function requestPermission(req, res) {
+    const folder = decodeURIComponent(req.params.folder)
+    const password = req.body.password
+
+    if (!folder || !password) return res.status(400).json({ error: "dados não fornecidos" });
+
+    const pdFolder = await FileService.folderIsProtected(folder)
+
+    if (!pdFolder) return res.status(404).json({ error: "pasta protegida não encontrada" });
+
+    if (password == pdFolder) {
+        req.session.folder = folder
+        return res.sendStatus(200)
+    }
+
+    res.status(403).json({ error: "senha incorreta" });
+}
+
+export async function logout(req, res) {
+    if (req.session) req.session.destroy();
+    res.redirect('/');
+}
+
 export async function listFolders(req, res) {
     const data = FileService.listFolders()
 
@@ -65,8 +88,13 @@ export async function listFiles(req, res) {
 }
 
 export async function downloadFile(req, res) {
-    const folder = decodeURIComponent(req.params.folder)
-    const filename = decodeURIComponent(req.params.filename)
+    const isGet = req.method.toLowerCase() == 'get'
+
+    const folder = isGet ? decodeURIComponent(req.params.folder) : req.body.folder
+    const filename = isGet ? decodeURIComponent(req.params.filename) : req.body.filename
+
+    if (!folder || !filename)
+        return res.status(400).json({ error: "folder or filename not provided" })
 
     let data = FileService.getFileDetails(folder, filename)
 
@@ -85,6 +113,10 @@ export async function viewFile(req, res) {
     let data = FileService.getFileDetails(folder, filename)
 
     if ( data.error ) return res.status(404).json({ error: data.error })
+
+    if (filename.endsWith('.mp3')) {
+        res.contentType("audio/mpeg")
+    }
 
     res.sendFile(
         FileService.getFilePath(folder, filename)

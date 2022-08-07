@@ -5,9 +5,10 @@ async function MakePose(data) {
     const people = data.data.people.at(0)
 
     //let keys = Object.keys(people).filter(key => key.includes('2d'))
+    //console.log(people["hand_right_keypoints_2d"].join(' '))
 
     try {
-        const res =  await PoseMaker({
+        const dataStream =  await PoseMaker({
             pose: people["pose_keypoints_2d"],
             face: people["face_keypoints_2d"],
             hand_left: people["hand_left_keypoints_2d"],
@@ -16,8 +17,9 @@ async function MakePose(data) {
         })
 
         //fs.writeFileSync("out.bin", res)
+        //console.log(res.length)
 
-        return res
+        return dataStream
     } catch (e) {
         console.log(e)
         return null
@@ -29,21 +31,19 @@ async function MakePose(data) {
     //console.log(people[keys.at(1)].slice(0).join(' '))
 }
 
-// let data = JSON.parse(fs.readFileSync("1_keypoints.json"))
+// let data = JSON.parse(fs.readFileSync("./util/keypoints.json"))
 
 // let ini = performance.now();
 
 // (async function () {
-//     for (let i = 1; i <= 64; i++) {
-//         getPose({
-//             linewidth: 15,
-//             data: data
-//         })
-//         console.log(i)
-//     }
-        
 
-//     //console.log(`\nlevou ${(performance.now() - ini) / 1000} segundos`)
+//     MakePose({
+//         linewidth: 15,
+//         data: data
+//     })
+
+
+// //     //console.log(`\nlevou ${(performance.now() - ini) / 1000} segundos`)
 // })()
 
 // process.on("exit", () => {

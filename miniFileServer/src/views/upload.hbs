@@ -13,6 +13,7 @@
                 <label class="label_filename">Nome</label>
             </div>
             <input id="input_nomesala" name="filename" type="text" placeholder="Alterar nome?">
+            <input id="input_replace" name="replace" type="text" style="display: none;">
             <div id="div_label_ext">
                 <label class="label_filename" id="label_ext"></label>
             </div>
@@ -22,7 +23,7 @@
             <div class="div_dialog_label">
                 <label class="label_filename">Pasta</label>
             </div>
-            <select id="select_type" name="folder"></select>
+            <select id="select_type"></select>
         </div>
 
         <input id="inputArquivo" type="file" name="file">
@@ -59,43 +60,97 @@
     $("#containerForm").submit(function (e) {
         e.preventDefault()
 
-        if (document.getElementById("inputArquivo").files.length == 0) return alert("Nenhum arquivo selecionado!")
+        if (document.getElementById("inputArquivo").files.length == 0)
+            return alert("Nenhum arquivo selecionado!");
 
-        if (!$("#select_type option:selected").val()) return alert("Nenhuma pasta selecionada")
-
-        showLoading()
+        let folder = $("#select_type").val()
+        if (!folder)
+            return alert("Nenhuma pasta selecionada");
 
         let dataform = new FormData(document.getElementById("containerForm"))
         let name = dataform.get("filename")
+        $("#input_replace").val("false")
 
-        if (!name) dataform.set("filename", '')
-        else if (!isValidName(name)) {
-            return alert("Nome Inválido\n\nDeve conter apenas:\n\
-                        \n- Letras\
-                        \n- Números\
-                        \n- Espaços\
-                        \n- Parênteses\
-                        \n\nMáximo 90 caracteres")
-        }
-        else dataform.set("filename", name + $("#label_ext").text())
+        if (!name)
+            dataform.set("filename", '');
+        else if (!isValidName(name))
+            return alert("Nome Inválido\n\nDeve conter apenas:\n\n- Letras\n- Números\n- Espaços\n- Parênteses\n\nMáximo 90 caracteres");
+        else
+            dataform.set("filename", name + $("#label_ext").text());
+
+        showLoading()
 
         $.ajax({
-            url: "/api/services/push",
+            url: `/api/services/push/${encodeURIComponent(folder)}`,
             type: "POST",
             data: dataform,
             contentType: false,
-            processData: false,
-            success: function (data) {
-                if (data.responseJSON) data = data.responseJSON
+            processData: false
+        }).done((data) => {
+            if (data.responseJSON) data = data.responseJSON
 
-                window.location.href = encodeURI(`/view/${data.folder}/${data.filename}`)
-            },
-            error: function (data) {
-                hideLoading()
-                alert((data.responseJSON ? data.responseJSON.error : data.error))
-            },
+            location.href = encodeURI(`/view/${data.folder}/${data.filename}`)
+        }).fail((data) => {
+            hideLoading()
+
+            switch (data.status) {
+                case 400:
+                    if (!onAlreadyExists(data.responseJSON))
+                        alert((data.responseJSON ? data.responseJSON.error : data.error));
+                    break;
+                case 401:
+                    onPermissionDenied(folder)
+                    break;
+                default:
+                    alert((data.responseJSON ? data.responseJSON.error : data.error));
+            }
         })
     })
+
+    function onAlreadyExists(data) {
+        if (!data || !data.error) return false
+        if (!data.error.includes("replace")) return false
+
+        makeQuestion({
+            title: "Este arquivo já existe. Deseja Substituir?",
+            ok: {
+                title: "Sim",
+                onPress: () => {
+                    $("#input_replace").val("true")
+                    $("#containerForm").submit()
+                }
+            }
+        })
+
+        return true
+    }
+
+    function onPermissionDenied(folder) {
+        const cb = (password) => {
+            if (!password) return alert("Senha não informada")
+
+            showLoading()
+
+            $.ajax({
+                url: `/api/auth/requestpermission/${encodeURIComponent(folder)}`,
+                method: "POST",
+                data: { password }
+            }).done(() => {
+                $("#containerForm").submit()
+            }).fail((data) => {
+                hideLoading()
+
+                if (data.status == 403) alert("Senha Incorreta");
+                else alert("Erro Desconhecido");
+            })
+        }
+
+        makeQuestion({
+            title: "Senha da pasta",
+            inputType: "password",
+            ok: { title: "Ok", onPress: cb },
+        })
+    }
 
     function onReceiveData(data) {
         const selectPasta = document.getElementById("select_type")

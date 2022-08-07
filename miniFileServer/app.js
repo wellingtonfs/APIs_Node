@@ -13,10 +13,13 @@ import exphbs from "express-handlebars";
 import mongoose from "mongoose";
 import morgan from "morgan";
 import moment from "moment-timezone"
+import sessions from "express-session";
+import cookieParser from "cookie-parser";
 
 //API
 
 import apiHome from "./src/routes/api/home.js"
+import apiAuth from "./src/routes/api/auth.js"
 import apiFiles from "./src/routes/api/files.js"
 import apiServices from "./src/routes/api/services.js"
 import apiYoutube from "./src/routes/api/youtube.js"
@@ -74,6 +77,23 @@ app.use((error, req, res, next) => {
 })
 
 app.use(express.urlencoded({extended: true}))
+app.use(cookieParser())
+
+const oneDay = 1000 * 60 * 60; // 1 hora
+
+// Sessions middleware
+
+app.use(sessions({
+    secret: process.env.SECRET_KEY,
+    name: "Servidor",
+    saveUninitialized:true,
+    cookie: {
+        maxAge: oneDay,
+        sameSite: 'strict'
+    },
+    saveUninitialized: false,
+    resave: false
+}));
 
 // Banco de dados
 mongoose.Promise = global.Promise
@@ -98,6 +118,7 @@ connectMongo()
 //api
 
 app.use('/api', apiHome)
+app.use('/api/auth', apiAuth)
 app.use('/api/files', apiFiles)
 app.use('/api/services', apiServices)
 app.use('/api/youtube', apiYoutube)

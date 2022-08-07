@@ -16,15 +16,14 @@ export async function makepose(req, res) {
     if (!linewidth || !keypoints)
         return res.status(400).json({ error: "campos obrigatórios: linewidth, keypoints" })
 
-    const pose = await MakePose({
+    const dataStream = await MakePose({
         linewidth: linewidth,
         data: keypoints
     })
 
-    if (pose === null)
+    if (dataStream === null)
         return res.sendStatus(400)
 
-    res.json({
-        pose: pose
-    })
+    res.status(200)
+    dataStream.pipe(res)
 }

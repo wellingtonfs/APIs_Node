@@ -201,8 +201,29 @@ if face[54, 2] >= c and face[60, 2] >= c and face[62, 2] >= c and face[66, 2] >=
 enc = cv2.imencode(".png", img)[1]
 enc = enc.tobytes()
 
+
+# def getData(data, chunk_size=256):
+#     alldata = "linewidth=15&keypoints=" + json.dumps(data)
+
+#     for i in range(len(alldata) // chunk_size):
+#         yield alldata[i*chunk_size:(i+1)*chunk_size]
+
+#     if len(alldata) % chunk_size != 0:
+#         yield alldata[-(len(alldata) % chunk_size):]
+
 print(enc)
 
+# chunk_size = 1000
+
+# for i in range(len(enc) // chunk_size):
+#     print(enc[i*chunk_size:(i+1)*chunk_size], flush=True)
+
+# if len(enc) % chunk_size != 0:
+#     print(enc[-(len(enc) % chunk_size):], flush=True)
+
+# print(enc[-10:])
+
+# print(len(enc[-10:]))
 #cv2.imwrite(args.out, img)
 
 #print("python diz: ok")

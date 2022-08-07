@@ -4,19 +4,23 @@ import trycatch from "../../util/trycatch.js"
 
 const rota = express.Router()
 
-rota.get('/', trycatch((req, res) => {
+rota.get('/', trycatch(async (req, res) => {
     res.render('home')
 }))
 
-rota.get('/upload', trycatch((req, res) => {
+rota.get('/requestpermission/:folder', trycatch(async (req, res) => {
+    res.render('auth', { folder: decodeURIComponent(req.params.folder) })
+}))
+
+rota.get('/upload', trycatch(async (req, res) => {
     res.render('upload')
 }))
 
-rota.get('/criar_pasta', trycatch((req, res) => {
+rota.get('/criar_pasta', trycatch(async (req, res) => {
     res.render('create_folder')
 }))
 
-rota.post('/checkin', trycatch((req, res) => {
+rota.post('/checkin', trycatch(async (req, res) => {
     res.sendStatus(200)
 }))
 

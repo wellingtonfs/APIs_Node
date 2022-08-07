@@ -1,6 +1,7 @@
 import path from "path"
 import { spawn } from "child_process"
 import { fileURLToPath } from 'url';
+import { Readable } from "stream"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -21,9 +22,16 @@ export default function PoseMaker(jsondata) {
                 "--linewidth", jsondata.linewidth
             ]
         )
+
+        const dataStream = new Readable({read(size) {}})
         
         child.stdout.on("data", (data) => {
-            res(data.toString().replace(/\n$/, ''))
+            dataStream.push(data.toString().replace(/\n$/, ''))
+        })
+
+        child.stdout.on("end", () => {
+            dataStream.push(null)
+            res(dataStream)
         })
         
         child.on("error", (error) => {
@@ -31,3 +39,12 @@ export default function PoseMaker(jsondata) {
         })
     })
 }
+
+/*
+const data = new Readable({read(size) {}})
+data.push(teste)
+data.push(null)
+
+res.status(200)
+data.pipe(res)
+*/

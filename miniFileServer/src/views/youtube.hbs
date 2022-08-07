@@ -39,12 +39,12 @@
 
     //verifica se uma string é um link do youtube
     function isVideoURL(frase) {
-        return frase.includes("youtube.com/watch?v=")
+        return frase.includes("youtube.com/watch?v=") || frase.match(/^.+youtu\.be\/.+$/)
     }
 
     //dado um link do youtube, retorna o se ID
     function getVideoId(url) {
-        let lookFor = "watch?v="
+        let lookFor = url.includes("watch?v=") ? "watch?v=" : "youtu.be/"
         let indexInit = url.indexOf(lookFor) + lookFor.length
         let indexEnd = url.length
 
@@ -72,6 +72,26 @@
         })
     }
 
+    //abre o dialogo mostrando o link do vídeo e a opção de download
+    function mkQuestion(id) {
+        makeQuestion({
+            title: `${location.origin}/youtube/${id}`,
+            ok: {
+                title: "Baixar",
+                onPress: () => { location.href = `${rotaApi}/get/${id}` }
+            }
+        })
+    }
+
+    //botão utilizado para baixar o audio que está sendo reproduzido
+    function addDownloadAction() {
+        if (!state.video.id) return;
+
+        $("#div_download_cur_audio").off('click').click(() => {
+            mkQuestion(state.video.id)
+        })
+    }
+
     //Carrega uma música para ser tocada
     function loadMusic() {
         //Preparar o Audio
@@ -88,6 +108,9 @@
 
         //Mudar Background
         changeBackground()
+
+        //Atualizar Botão Download
+        addDownloadAction()
 
         //Buscar Semelhantes
         makeRequestSimilar()
@@ -170,10 +193,8 @@
         //adiciona o botão de download
         const divDownload = document.createElement("div")
         divDownload.className = "div_download back_gray"
-        divDownload.onclick = () => {
-            window.location.href = `${rotaApi}/get/${video.id}`
-        }
-
+        divDownload.onclick = () => mkQuestion(video.id)
+        
         //aninha todos os itens
         mydiv.appendChild(divimg)
         mydiv.appendChild(mybutton)
@@ -203,7 +224,7 @@
             let nv = v.toString()
             return nv.length == 1 ? '0' + nv : nv
         })
-
+        
         //junta a duração em uma string do tipo: hh:mm:ss ou mm:ss
         duration = duration[0] ? duration.join(':') : duration.slice(1).join(':')
 
@@ -321,14 +342,6 @@
         }
 
         makeRequestSearch(inputObj.val())
-    })
-
-    //botão utilizado para baixar o audio que está sendo reproduzido
-    $("#div_download_cur_audio").click(() => {
-        if (state.video.id === null)
-            return;
-
-        window.location.href = `${rotaApi}/get/${state.video.id}`
     })
 
     //quando a página termina de carregar

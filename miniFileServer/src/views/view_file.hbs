@@ -77,8 +77,7 @@
         if (res.status == 404) {
             $("#titulo").html("Arquivo não Encontrado")
         } else if (res.status == 401) {
-            const password = prompt("Senha da pasta: ")
-            return makeRequest({ ...dados, password })
+            location.href = `/requestpermission/${encodeURIComponent(dados.folder)}`
         } else {
             $("#titulo").html("Erro Desconhecido")
         }

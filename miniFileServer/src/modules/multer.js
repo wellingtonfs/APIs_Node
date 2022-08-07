@@ -4,9 +4,10 @@ import FileService from "../services/fileServices.js"
 
 export default {
     storage: multer.diskStorage({
-        destination: (req, file, cb) => {
+        destination: async (req, file, cb) => {
             //console.log(req)
-            var { folder, filename, replace } = req.body
+            let { filename, replace } = req.body
+            let folder = decodeURIComponent(req.params.folder)
 
             // tratar dados do cliente
 
@@ -29,8 +30,10 @@ export default {
             else if ( vfile.exist && !replace )
                 return cb(new Error("o arquivo já existe. use 'replace = true' para substituir"));
             else if ( replace )
-                FileService.backupFile(folder, filename)
+                await FileService.backupFile(folder, filename)
 
+            req.body.folder = folder
+            
             return cb(null, FileService.getFolderPath(folder))
         },
         filename: (req, file, cb) => {

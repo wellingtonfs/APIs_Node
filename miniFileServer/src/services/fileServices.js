@@ -149,27 +149,32 @@ class FileService {
     }
 
     backupFile(folder, file) {
-        if (!this.isValidName(folder)) return { error: `nome inválido: '${folder}'` }
-        if (!this.isValidName(file, true)) return { error: `nome inválido: '${file}'` }
+        return new Promise((res) => {
+            if (!this.isValidName(folder)) res({ error: `nome inválido: '${folder}'` })
+            if (!this.isValidName(file, true)) res({ error: `nome inválido: '${file}'` })
 
-        const pathfile = Path.join([Path.dirData, folder, file])
+            const pathfile = Path.join([Path.dirData, folder, file])
 
-        if (!fs.existsSync(pathfile)) return { error: `arquivo não encontrado: '${file}'` }
+            if (!fs.existsSync(pathfile)) res({ error: `arquivo não encontrado: '${file}'` })
 
-        const pathfileBkp = Path.join([Path.dirBackup, folder, file])
+            const dest = Path.join([Path.dirBackup, folder])
+            const pathfileBkp = Path.join([dest, file])
 
-        try {
-            if (!fs.existsSync(Path.dirBackup)) {
-                fs.mkdirSync(Path.dirBackup, { recursive: true })
+            try {
+                if (!fs.existsSync(dest)) {
+                    fs.mkdirSync(dest, { recursive: true })
+                }
+
+                fs.copyFile(pathfile, pathfileBkp, (err) => {
+                    res({ ok: true })
+                })
+            } catch (e) {
+                console.log(e)
+                res({ error: `erro desconhecido` })
             }
 
-            fs.copyFileSync(pathfile, pathfileBkp)
-            fs.unlinkSync(pathfile)
-        } catch (e) {
-            return { error: `erro desconhecido` }
-        }
-
-        return { ok: true }
+            res({ ok: true })
+        })
     }
 
     createFolder(folder) {
