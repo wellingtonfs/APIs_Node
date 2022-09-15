@@ -19,7 +19,12 @@ class MyRobot {
         this.counter = 0
         this.shouldReconnect = true
     
-        this.start()
+        try {
+            this.start()
+        } catch (e) {
+            console.log("Problemas ao conectar ao browser:", e)
+        }
+
         this.getVideoId = this.getVideoId.bind(this)
         this.checkCounter = this.checkCounter.bind(this)
     }

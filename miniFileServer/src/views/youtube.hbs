@@ -1,25 +1,56 @@
-<div class="dialog-form">
-    <div id="containerForm" class="contrainerInterno">
-        <h3 id="titulo">Procurar Música</h3>
-        <div id="div_search" class="div_row">
-            <input id="search_field" name="palavra" placeholder="Pesquise ou cole o link">
-            <button id="btnCommand">Ok</button>
-        </div>
-        <div id="div_itens" class="scroll_style">
-        </div>
+<div id="containerForm">
+    <div id="div_search">
+        <input id="search_field" name="palavra" placeholder="Pesquise ou cole o link">
+        <button id="btnCommand">Pesquisar</button>
+    </div>
 
-        <div class="div_row div_dialog_section">
-            <div id="trackAudio">
-                <label id="dialog-title">Nenhuma Música Tocando</label>
-                <audio controls name="media" preload="none">
-                    <source type="audio/mpeg">
-                </audio>
+    <div class="div_itens">
+        <div class="columnA">
+            <div id="divImg">
+                <img src="https://i.ytimg.com/vi/W8dWDjwkMDw/hqdefault.jpg">
+                <label>Nome da Música</label>
             </div>
-            <div id="div_download_cur_audio" class="div_download">
+            <div class="div_lista">
+                <div id="div_listmusic" class="div_list_itens">
+                    {{!-- lista de itens --}}
+                </div>
+            </div>
+        </div>
+        <div class="columnB">
+            <label>Histórico</label>
+            <div class="div_lista">
+                <div id="div_history" class="div_list_itens">
+                    {{!-- lista de itens --}}
+                </div>
             </div>
         </div>
     </div>
+
+    <div class="div_dialog_section">
+        <div id="div_playpause" class="div_download">
+        </div>
+
+        <div id="divTrackAudio">
+            <label id="dialog-title">Nenhuma Música Tocando</label>
+            <div>
+                <input id="trackAudio" type="range" min="0" max="1" step="any">
+                <label id="labelDuration">00:00</label>
+                <input id="trackVolume" type="range" min="0" max="1" step="any">
+            </div>
+        </div>
+
+        <div id="div_download_cur_audio" class="div_download">
+        </div>
+    </div>
 </div>
+
+
+<view id="progress" style="position: absolute; bottom: 0; width: 100%; display: none; align-items: center; flex-direction: column;">
+    <label>Carregando...</label>
+    <progress value="0" max="100" style="width: 100%;"></progress>
+</view>
+
+<audio controls name="media" preload="none"></audio>
 
 <script defer>
     var rotaApi = "/api/youtube"
@@ -32,7 +63,8 @@
         },
         videolist: null,
         nextlist: null,
-        previousVideo: null
+        previousVideo: null,
+        urlBlob: null
     }
 
     // ---------------------------------------------------------------------------------- funções uteis
@@ -56,6 +88,64 @@
         return url.slice(indexInit, indexEnd)
     }
 
+    //converte segundos em hh:mm:ss
+    function convertIntToDuration(duration) {
+        let hrs = Math.floor(duration / 3600.0)
+        let mim = Math.floor((duration % 3600.0) / 60)
+        let seg = Math.floor((duration % 3600.0) % 60)
+
+        mim = mim >= 10 ? mim.toString() : '0' + mim.toString()
+        seg = seg >= 10 ? seg.toString() : '0' + seg.toString()
+
+        if (hrs == 0) return `${mim}:${seg}`;
+
+        hrs = hrs >= 10 ? hrs.toString() : '0' + hrs.toString()
+
+        return `${hrs}:${mim}:${seg}`
+    }
+
+    function showProgress() {
+        $("#progress").css("display", "flex")
+        $("#progress progress").val(50)
+    }
+
+    function hideProgress() {
+        $("#progress").css("display", "none")
+    }
+
+    function downloadAudiojQuery(url) {
+        return new Promise((resolve, reject) => {
+            showProgress()
+
+            $.ajax({
+                url: url,
+                method: "GET",
+                xhr: function () {
+                    let xhr = new window.XMLHttpRequest();
+
+                    xhr.addEventListener("progress", function (e) {
+                        if (e.lengthComputable && e.total > 0)
+                            $("#progress progress").val((100 * e.loaded) / e.total)
+                    }, false);
+
+                    return xhr;
+                },
+                xhrFields: {
+                    responseType: 'blob'
+                }
+            }).done((data) => {
+                const blob = data;
+                if (!blob) reject("blob vazio")
+
+                resolve(blob)
+            }).fail((error) => {
+                reject(error)
+            }).always(() => {
+                hideProgress()
+            })
+        })
+    }
+
     //realiza uma requisição para obter a imagem de fundo do audio atual
     function changeBackground() {
         const body = document.querySelector('body')
@@ -73,12 +163,19 @@
     }
 
     //abre o dialogo mostrando o link do vídeo e a opção de download
-    function mkQuestion(id) {
+    function mkQuestion(id, urlFromAudio=false) {
         makeQuestion({
             title: `${location.origin}/youtube/${id}`,
             ok: {
                 title: "Baixar",
-                onPress: () => { location.href = `${rotaApi}/get/${id}` }
+                onPress: () => {
+                    if (!urlFromAudio) return location.href = `${rotaApi}/get/${id}`;
+
+                    let na = document.createElement("a")
+                    na.download = `${$("#dialog-title").html()}.mp3`
+                    na.href = $("audio").attr("src")
+                    na.click()
+                }
             }
         })
     }
@@ -88,23 +185,35 @@
         if (!state.video.id) return;
 
         $("#div_download_cur_audio").off('click').click(() => {
-            mkQuestion(state.video.id)
+            mkQuestion(state.video.id, true)
         })
     }
 
     //Carrega uma música para ser tocada
     function loadMusic() {
+        //limpar audio antigo
+        if (state.urlBlob !== null) {
+            URL.revokeObjectURL(state.urlBlob)
+        }
+        
         //Preparar o Audio
         const audio = document.querySelector("audio")
-        document.querySelector("#dialog-title").textContent = state.video.title
-        document.querySelector("head title").text = state.video.title
-
         audio.pause()
 
-        document.querySelector("source").src = `${window.location.origin}/api/${state.video.id}`
-
-        audio.load()
-        audio.play()
+        downloadAudiojQuery(`${window.location.origin}/api/youtube/get/${state.video.id}`)
+            .then((data) => {
+                state.urlBlob = URL.createObjectURL(data);
+                audio.src = state.urlBlob;
+                audio.load()
+                audio.play()
+                console.log(state.urlBlob)
+            }).catch((error) => {
+                console.log(error)
+                alert("Erro desconhecido")
+            })
+        
+        document.querySelector("#dialog-title").textContent = state.video.title
+        document.querySelector("head title").text = state.video.title
 
         //Mudar Background
         changeBackground()
@@ -164,7 +273,7 @@
 
     //adiciona um item a lista de músicas
     function addVideoButton(video) {
-        const divPai = document.getElementById("div_itens")
+        const divPai = document.getElementById("div_listmusic")
 
         //adiciona o container
         const mydiv = document.createElement("div")
@@ -201,6 +310,9 @@
         mydiv.appendChild(divTime)
         mydiv.appendChild(divDownload)
         divPai.appendChild(mydiv)
+
+        //tirar depois
+        document.getElementById("div_history").appendChild(mydiv.cloneNode(true))
 
         //cria o evento de click do botão do titulo
         mybutton.addEventListener("click", () => {
@@ -252,7 +364,7 @@
     //quando os dados são recebidos das requisições de search, similar e ById
     //essa função atualiza toda a lista de músicas
     function onReceiveData(data) {
-        $("#div_itens").empty()
+        $("#div_listmusic").empty()
 
         for (let video of data.videos) {
             addVideoButton(video)
@@ -344,18 +456,26 @@
         makeRequestSearch(inputObj.val())
     })
 
+    $("#div_playpause").click(() => {
+        const audio = document.querySelector("audio")
+
+        if (audio.paused) {
+            audio.play()
+            //mudar background
+        } else {
+            audio.pause()
+            //mudar background
+        }
+    })
+
     //quando a página termina de carregar
     window.onload = () => {
+        $("#div_creditos_background").css("display", "none")
         //configurar rota
         rotaApi = "{{rota}}"
 
-        //configurar o audio
-        let audio = document.querySelector("audio")
-        audio.volume = 0.2
-        audio.onended = nextMusic
-
         //adiciona o botão de voltar
-        addGoBackButton("containerForm", "/")
+        //addGoBackButton("containerForm", "/")
 
         document.addEventListener("copy", () => {
             try {
@@ -390,108 +510,234 @@
             makeRequestById(videoId)
         }
 
-        //salvar ip como checkIn
-        getIp(ip => {
-            $.ajax({
-                url: "/checkin",
-                type: "POST",
-                data: { ip: ip }
-            })
+        // ------------------------------------------------------ Eventos referentes a track de audio
+
+        //configurar o audio
+        const audio = document.querySelector("audio")
+        const trackAudio = document.querySelector("#trackAudio")
+        const trackVolume = document.querySelector("#trackVolume")
+        const labelDuration = document.querySelector("#labelDuration")
+
+        //definir um valor inicial baixo
+        trackAudio.value = 0
+        trackVolume.value = 0.3
+
+        audio.onended = nextMusic
+
+        trackAudio.addEventListener("input", function () {
+            if (isNaN(audio.duration)) return;
+            labelDuration.textContent = convertIntToDuration(this.value * audio.duration)
+        })
+
+        trackAudio.addEventListener("mousedown", function () {
+            if (isNaN(audio.duration)) return;
+            this.changing = true
+        })
+
+        trackAudio.addEventListener("mouseup", function () {
+            if (isNaN(audio.duration)) return;
+            audio.currentTime = this.value * audio.duration
+            this.changing = false
+        })
+
+        trackVolume.addEventListener("input", function () {
+            audio.volume = this.value
+        })
+
+        audio.addEventListener("timeupdate", function () {
+            if (!trackAudio.changing) {
+                trackAudio.value = this.currentTime / this.duration
+                labelDuration.textContent = convertIntToDuration(this.currentTime)
+            }
+        })
+
+        audio.addEventListener("loadeddata", function () {
+            trackAudio.value = 0
+            labelDuration.textContent = convertIntToDuration(0)
         })
     }
 </script>
 
 <style>
+    /* -------------------- Containers Principais -------------------- */
+
     body {
-        overflow: hidden;
+        width: 100vw;
+        height: 100vh;
     }
 
     .back_gray {
-        background-color: rgb(211, 211, 211);
+        background-color: #fff;
     }
 
-    .dialog-form {
+    #containerForm {
         display: flex;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        flex-direction: column;
+        
+        width: 100%;
+        height: 100%;
+
+        background-color: #ffffff;
+        align-items: center;
+    }
+
+    /* -------------------- Barra Superior -------------------- */
+
+    #div_search {
+        display: flex;
+        flex-direction: row;
+
+        width: 100%;
+        height: 8%;
+
+        background-color: #fff;
+        
+        border-bottom: 1px solid;
+        border-color:#eee;
+
         align-items: center;
         justify-content: center;
-        flex-direction: column;
     }
 
-    .dialog-form > .contrainerInterno {
+    #div_search > input {
         display: flex;
-        flex-direction: column;
-        background-color: #f5f5f5f5;
-        padding: 20px;
-        border-radius: 20px;
-        box-shadow: 5px 5px 5px 5px #888888cc;
 
-        width: 60vw;
-        height: 85vh;
+        width: 50%;
+        height: 60%;
 
-        min-width: 250px;
-        min-height: 250px;
+        outline: 0px;
+
+        text-align: center;
+        font-size: larger;
+
+        border-width: 0px;
+        border-bottom-width: 1px;
+        border-color: #eee;
+
+        color: #333;
+    }
+
+    #div_search > input::placeholder {
+        color: #999;
+    }
+
+    #div_search button {
+        height: 60%;
+    }
+
+    button {
+        display: flex;
+
+        border-width: 0px;
+        width: 100%;
 
         align-items: center;
-        overflow: hidden;
+        justify-content: center;
+
+        color: #333;
+        font-size: medium;
     }
 
-    @media (orientation: portrait) {
-        .dialog-form > .contrainerInterno {
-            width: 100vw;
-            height: 100vh;
-            border-radius: 0px;
-            background-color: #fff;
-            box-shadow: 5px 10px 8px 10px #88888800;
-        }
+    button:hover {
+        background-color: rgb(0, 255, 128);
     }
 
-    @media (max-height: 520px) and (orientation: landscape) {
-        .dialog-form > .contrainerInterno {
-            width: 80vw;
-            height: 100vh;
-            border-radius: 0px;
-            box-shadow: 5px 10px 8px 10px #88888800;
-        }
-
-        .dialog-form > .contrainerInterno > h3 {
-            display: none;
-        }
+    #btnCommand {
+        background-color: rgb(0, 78, 55);
+        color: rgb(255, 255, 255);
+        width: 10%;
+        margin-left: 5px;
+        border-radius: 10px;
     }
 
-    #div_itens {
+    #btnCommand:hover {
+        background-color: rgb(0, 255, 128);
+        color: rgb(0, 0, 0);
+    }
+
+    /* -------------------- Parte Central da Página -------------------- */
+
+    .div_itens {
+        display: flex;
+        flex-direction: row;
+
+        width: 100%;
+        height: 84%;
+
+        overflow-y: auto;
+    }
+
+    .columnA {
+        display: flex;
+        flex-direction: column;
+        width: 70%;
+        height: 100%;
+
+        border-right: 1px solid;
+        border-color:#eee;
+    }
+
+    .columnB {
+        display: flex;
+        flex-direction: column;
+        width: 30%;
+        height: 100%;
+
+        align-items: center;
+    }
+
+    /* Classes Gerais */
+
+    .div_lista {
+        height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .div_list_itens {
+        flex-direction: column;
+
+        width: 100%;
+        height: 80%;
+    }
+
+    /* Coluna Esquerda */
+
+    .columnA #divImg {
         display: flex;
         flex-direction: column;
 
         width: 100%;
-        height: 100%;
+        height: 90%;
 
         align-items: center;
-        overflow-y: auto;
-        overflow-x: hidden;
+        justify-content: center;
+
+        border-bottom: 1px solid;
+        border-color:#eee;
     }
+
+    .columnA #divImg img {
+        display: flex;
+        width: 20%;
+        height: 40%;
+        border-radius: 100%;
+    }
+
+    /* Classes Gerais (Itens das Listas) */
 
     .div_row {
         display: flex;
         flex-direction: row;
         width: 100%;
-        height: 8vh;
+        
         justify-content: center;
         margin: 2px;
 
         min-height: 50px;
-    }
 
-
-    #div_download_cur_audio {
-        background-image: url("/download.png");
-        background-size: contain;
-        background-position: center;
-        background-repeat: no-repeat;
+        border-bottom-width: 1px;
+        border-color: #000;
     }
 
     .div_img {
@@ -542,82 +788,89 @@
         opacity: 0.5;
     }
 
-    #div_search {
-        margin-bottom: 10px;
-    }
-
-    #div_search > input {
-        display: flex;
-        width: 100%;
-
-        border-width: 0px;
-        border-radius: 10px;
-        outline: 0px;
-        text-align: center;
-    
-        font-size: larger;
-
-        background-color: #e5e5e5;
-        color: #333;
-    }
-
-    #div_search > input::placeholder {
-        color: #999;
-    }
-
-    button {
-        display: flex;
-
-        border-width: 0px;
-        width: 100%;
-
-        align-items: center;
-        justify-content: center;
-
-        color: #333;
-        font-size: medium;
-    }
-
-    button:hover {
-        background-color: rgb(0, 255, 128);
-    }
-
-    #btnCommand {
-        background-color: rgb(0, 78, 55);
-        color: rgb(255, 255, 255);
-        width: 10%;
-        margin-left: 5px;
-        border-radius: 10px;
-    }
-
-    #btnCommand:hover {
-        background-color: rgb(0, 255, 128);
-        color: rgb(0, 0, 0);
-    }
+    /* -------------------- Barra Inferior e Audio -------------------- */
 
     .div_dialog_section {
+        display: flex;
         flex-direction: row;
-        margin-top: 15px;
+
+        width: 100%;
+        height: 8%;
+
+        border-top: 1px solid;
+        border-color:#eee;
+    }
+    
+    #div_playpause {
+        background-image: url("/download.png");
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
     }
 
-    #trackAudio {
+    #divTrackAudio {
         display: flex;
         flex-direction: column;
-        align-items: center;
+
         width: 100%;
         height: 100%;
+    }
+
+    #divTrackAudio div {
+        display: flex;
+        flex-direction: row;
+
+        width: 100%;
+        height: 100%;
+
+        align-items: center;
+        justify-content: space-between;
     }
 
     #dialog-title {
         color: #333;
-        font-size: large;
+        font-size: medium;
         text-align: center;
+        padding-top: 10px;
+    }
+
+    #trackAudio {
+        width: 80%;
+    }
+
+    #trackVolume {
+        width: 10%;
+    }
+
+    #labelDuration {
+        font-size: small;
+    }
+
+    #div_download_cur_audio {
+        background-image: url("/download.png");
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
     }
 
     audio {
-        width: 100%;
-        height: 100%;
-        min-height: 25px;
-        background-color: #f5f5f5f5;
+        display: none;
+    }
+
+    progress {
+        display:block;
+        -webkit-appearance: none;
+    }
+
+    progress::-webkit-progress-bar {
+        background: #999;
+    }
+
+    progress::-moz-progress-bar {  
+        background-color: green;
+    }
+
+    progress::-webkit-progress-value {
+        background: green;
     }
 </style>

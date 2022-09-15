@@ -13,6 +13,8 @@ async function MakePose(data) {
             face: people["face_keypoints_2d"],
             hand_left: people["hand_left_keypoints_2d"],
             hand_right: people["hand_right_keypoints_2d"],
+            width: data.width,
+            height: data.height,
             linewidth: data.linewidth
         })
 

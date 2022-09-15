@@ -5,7 +5,7 @@ import trycatch from "../../util/trycatch.js"
 const rota = express.Router()
 
 rota.get('/', trycatch(async (req, res) => {
-    res.render('view')
+    res.render('view_test')
 }))
 
 rota.get('/:dir', trycatch(async (req, res) => {

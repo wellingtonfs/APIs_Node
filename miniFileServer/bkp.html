@@ -1,0 +1,407 @@
+<div id="container_main">
+    <div id="topbar">
+
+    </div>
+
+    <div id="container_coluns_main">
+
+        <div id="div_folderlist" class="div_col_main">
+            <label class="label_title_col">Diretórios</label>
+
+            <div class="div_col">
+                <div class="div_item">
+                    <div class="item_folder_icon"></div>
+                    <div class="item_label">
+                        <label>Bolsa Geral</label>
+                    </div>
+                </div>
+
+                <div class="div_item">
+                    <div class="item_folder_icon"></div>
+                    <div class="item_label">
+                        <label>Coisas Pessoais</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="div_filelist" class="div_col_main">
+            <label class="label_title_col">Arquivos</label>
+
+            <div class="div_col">
+                <div class="div_item">
+                    <div class="item_file_icon"></div>
+                    <div class="item_label">
+                        <label>Geral.zip</label>
+                    </div>
+                </div>
+
+                <div class="div_item">
+                    <div class="item_file_icon"></div>
+                    <div class="item_label">
+                        <label>foto.png</label>
+                    </div>
+                </div>
+
+                <div class="div_item">
+                    <div class="item_file_icon"></div>
+                    <div class="item_label">
+                        <label>Geral.zip</label>
+                    </div>
+                </div>
+
+                <div class="div_item">
+                    <div class="item_file_icon"></div>
+                    <div class="item_label">
+                        <label>foto.png</label>
+                    </div>
+                </div>
+
+                <div class="div_item">
+                    <div class="item_file_icon"></div>
+                    <div class="item_label">
+                        <label>Geral.zip</label>
+                    </div>
+                </div>
+
+                <div class="div_item">
+                    <div class="item_file_icon"></div>
+                    <div class="item_label">
+                        <label>foto.png</label>
+                    </div>
+                </div>
+
+                <div class="div_item">
+                    <div class="item_file_icon"></div>
+                    <div class="item_label">
+                        <label>foto.png</label>
+                    </div>
+                </div>
+
+                <div class="div_item">
+                    <div class="item_file_icon"></div>
+                    <div class="item_label">
+                        <label>Geral.zip</label>
+                    </div>
+                </div>
+
+                <div class="div_item">
+                    <div class="item_file_icon"></div>
+                    <div class="item_label">
+                        <label>foto.png</label>
+                    </div>
+                </div>
+
+                <div class="div_item">
+                    <div class="item_file_icon"></div>
+                    <div class="item_label">
+                        <label>Geral.zip</label>
+                    </div>
+                </div>
+
+                <div class="div_item">
+                    <div class="item_file_icon"></div>
+                    <div class="item_label">
+                        <label>foto.png</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="div_filedetails" class="div_col_main">
+            <label class="label_title_col">Detalhes</label>
+
+            <div id="div_body_details">
+                <div id="div_details_icon">
+                </div>
+                
+                <div id="div_details_title">
+                    <label>C3-Game-0.zip</label>
+                </div>
+                <div id="div_details_info">
+                    <div>
+                        <div>
+                            <label class="label_details_title">Tamanho: </label>
+                        </div>
+                        <div>
+                            <label class="label_details_item">349.3 MB</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <label class="label_details_title">Modificado em: </label>
+                        </div>
+                        <div>
+                            <label class="label_details_item">14/08/2022 04:03</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <label class="label_details_title">URL: </label>
+                        </div>
+                        <div>
+                            <label class="label_details_item">http://179.189.133.252:3005/api/services/get/AIC%20IV/C3-Game-0.zip</label>
+                        </div>
+                    </div>
+                </div>
+                <div id="div_details_btns">
+                    <div class="div_details_item">
+                        <div class="item_view_icon"></div>
+                        <div class="item_label">
+                            <label>Visualizar arquivo</label>
+                        </div>
+                    </div>
+                    <div class="div_details_item">
+                        <div class="item_download_icon"></div>
+                        <div class="item_label">
+                            <label>Baixar arquivo</label>
+                        </div>
+                    </div>
+                    <div class="div_details_item">
+                        <div class="item_trash_icon"></div>
+                        <div class="item_label">
+                            <label>Excluir arquivo</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script defer>
+   
+</script>
+
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+        outline: 0;
+        overflow: hidden;
+    }
+
+    div {
+        display: flex;
+    }
+
+    h1 {
+        color: aliceblue;
+    }
+
+    #container_main {
+        width: 100vw;
+        height: 100vh;
+        background-color: #121212;
+        flex-direction: column;
+    }
+
+    #topbar {
+        width: 100%;
+        height: 5%;
+        background-color: #043;
+    }
+
+    #container_coluns_main {
+        width: 100%;
+        height: 100%;
+        flex-direction: row;
+    }
+
+    @media (orientation: portrait) {
+        #container_coluns_main {
+            flex-direction: column;
+        }
+    }
+
+    .div_col_main {
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+
+        border-right-style: solid;
+        border-right-width: 1px;
+        border-right-color: #1f1f1f;
+
+        padding: 5px;
+    }
+
+    .label_title_col {
+        color: #aaa;
+        align-self: center;
+        font-size: small;
+        padding: 2px;
+    }
+
+    .div_col {
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+
+        overflow-y: scroll;
+    }
+
+    /* CSS dos itens das listas */
+
+    .div_item {
+        width: 100%;
+        min-height: 30px;
+        padding: 5px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+
+        background-color: #1f1f1f;
+    }
+
+    .div_item:hover {
+        opacity: 0.5;
+    }
+
+    .div_item .item_folder_icon {
+        width: 10%;
+
+        background-image: url("/folder.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    .div_item .item_file_icon {
+        width: 10%;
+
+        background-image: url("/file.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    .div_item .item_label {
+        width: 90%;
+        align-items: center;
+    }
+
+    .div_item .item_label label {
+        color: #aaa;
+    }
+
+    /* CSS dos detalhes dos arquivos */
+
+    #div_body_details {
+        flex-direction: column;
+
+        width: 100%;
+        height: 100%;
+
+        overflow-y: scroll;
+    }
+
+    #div_body_details #div_details_icon {
+        width: 20%;
+        height: 25%;
+        min-height: 100px;
+
+        background-image: url("/details.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    #div_body_details #div_details_title {
+        height: 25%;
+        min-height: 60px;
+
+        padding: 15px;
+        align-items: center;
+    }
+
+    #div_body_details #div_details_title label {
+        color: white;
+    }
+
+    #div_body_details #div_details_info {
+        width: 100%;
+        height: 25%;
+
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    #div_body_details #div_details_info div {
+        width: 100%;
+        height: auto;
+        min-height: 30px;
+
+        padding: 15px;
+
+        align-self: center;
+        align-items: center;
+    }
+
+    #div_body_details #div_details_info .label_details_title {
+        color: #fab005;
+    }
+
+    #div_body_details #div_details_info .label_details_item {
+        color: #aaa;
+    }
+
+    #div_body_details #div_details_btns {
+        flex-shrink: 0;
+
+        flex-direction: column;
+        width: 100%;
+        height: 25%;
+    }
+
+    .div_details_item {
+        width: 80%;
+        min-height: 30px;
+        padding: 5px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+        align-self: center;
+        background-color: #1f1f1f;
+    }
+
+    .div_details_item:hover {
+        opacity: 0.5;
+    }
+
+    .div_details_item .item_view_icon {
+        width: 10%;
+
+        background-image: url("/view.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    .div_details_item .item_download_icon {
+        width: 10%;
+
+        background-image: url("/download_seta.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    .div_details_item .item_trash_icon {
+        width: 10%;
+
+        background-image: url("/trash.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    .div_details_item .item_label {
+        width: 90%;
+        align-items: center;
+        margin-left: 10px;
+    }
+
+    .div_details_item .item_label label {
+        color: #aaa;
+    }
+</style>

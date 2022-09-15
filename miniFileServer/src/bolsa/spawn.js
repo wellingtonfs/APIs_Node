@@ -13,8 +13,8 @@ export default function PoseMaker(jsondata) {
             "python3",
             [
                 pathToPythonScript,
-                "1080",
-                "1920",
+                jsondata.height,
+                jsondata.width,
                 "--pose", ...jsondata.pose,
                 "--face", ...jsondata.face,
                 "--hand_left", ...jsondata.hand_left,
