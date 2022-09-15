@@ -1,0 +1,158 @@
+/* Base */
+
+.container_upload {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-direction: column;
+
+    background-color: #000000aa;
+}
+
+.window_upload {
+    flex-direction: column;
+
+    min-width: 200px;
+    min-height: 60px;
+
+    padding: 15px;
+    border-radius: 5px;
+
+    background-color: #121212;
+    border: 1px #333 solid;
+}
+
+.upload_close_text {
+    color: #aaa;
+    align-self: center;
+    text-align: center;
+    font-size: smaller;
+
+    margin-top: 10px;
+}
+
+/* Etapa seleção de arquivos */
+
+#container_upload_first {
+    display: none;
+}
+
+#container_upload_first #window_upload_first {
+    width: 15vw;
+    height: 12vh;
+}
+
+#container_upload_first #div_sel_file {
+    width: 100%;
+    height: 100%;
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+#container_upload_first #div_sel_file:hover {
+    background-color: #232323;
+}
+
+#container_upload_first #div_sel_file div {
+    width: 100%;
+    height: 60%;
+
+    background-image: url("/images/upload.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#container_upload_first #div_sel_file label {
+    color: #cdcdcd;
+}
+
+/* Etapa de renomear arquivo e realizar upload */
+
+#container_upload_second {
+    display: none;
+}
+
+#container_upload_second #window_upload_second {
+    width: 20vw;
+    height: 15vh;
+
+    justify-content: space-around;
+}
+
+#container_upload_second input {
+    color: #cdcdcd;
+    background-color: #232323;
+
+    border: 0;
+    border-radius: 5px;
+
+    padding: 10px;
+}
+
+#container_upload_second button {
+    color: #cdcdcd;
+    background-color: #232323;
+
+    border: 0;
+    border-radius: 5px;
+
+    padding: 10px;
+}
+
+#container_upload_second button:hover {
+    color: #232323;
+    background-color: #fab005;
+}
+
+/* replace */
+
+#container_upload_third {
+    display: none;
+}
+
+#container_upload_third #window_upload_third {
+    width: 20vw;
+    height: 12vh;
+}
+
+#container_upload_third #window_upload_third label {
+    color: #cdcdcd;
+    height: 50%;
+
+    text-align: center;
+}
+
+#container_upload_third #window_upload_third div {
+    width: 100%;
+    height: 50%;
+    flex-direction: row;
+}
+
+#container_upload_third #window_upload_third button {
+    width: 100%;
+    color: #cdcdcd;
+    background-color: #232323;
+
+    border: 0;
+    border-radius: 5px;
+
+    padding: 10px;
+}
+
+#container_upload_third #window_upload_third button:hover {
+    color: #232323;
+    background-color: #fab005;
+}
